@@ -1,0 +1,112 @@
+<Page
+    x:Class="MacShell.UI.Views.GeneralSettingsView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:MacShell.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="Transparent">
+
+    <ScrollViewer Padding="24" VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="24" MaxWidth="560">
+
+            <!-- Header -->
+            <StackPanel Spacing="8">
+                <TextBlock Text="General" Style="{StaticResource MacShellTextStyleDisplay}" />
+                <TextBlock Text="Configure MacShell startup and behavior" Style="{StaticResource MacShellTextStyleBodySecondary}" />
+            </StackPanel>
+
+            <!-- Start at Login -->
+            <Border Style="{StaticResource MacShellCardStyle}">
+                <StackPanel Spacing="12">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="SpaceBetween" VerticalAlignment="Center">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Start at Login" Style="{StaticResource MacShellTextStyleTitle}" />
+                            <TextBlock Text="Automatically launch MacShell when you sign in to Windows" Style="{StaticResource MacShellTextStyleBodySecondary}" />
+                        </StackPanel>
+                        <ToggleSwitch Style="{StaticResource MacShellToggleSwitchStyle}"
+                                      IsOn="{x:Bind ViewModel.StartAtLogin, Mode=TwoWay}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Launch at Startup Position -->
+            <Border Style="{StaticResource MacShellCardStyle}">
+                <StackPanel Spacing="12">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="SpaceBetween" VerticalAlignment="Center">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Restore Window Position" Style="{StaticResource MacShellTextStyleTitle}" />
+                            <TextBlock Text="Remember and restore window position on startup" Style="{StaticResource MacShellTextStyleBodySecondary}" />
+                        </StackPanel>
+                        <ToggleSwitch Style="{StaticResource MacShellToggleSwitchStyle}"
+                                      IsOn="{x:Bind ViewModel.RestorePosition, Mode=TwoWay}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Check for Updates -->
+            <Border Style="{StaticResource MacShellCardStyle}">
+                <StackPanel Spacing="12">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="SpaceBetween" VerticalAlignment="Center">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Check for Updates" Style="{StaticResource MacShellTextStyleTitle}" />
+                            <TextBlock Text="Automatically check for MacShell updates" Style="{StaticResource MacShellTextStyleBodySecondary}" />
+                        </StackPanel>
+                        <ToggleSwitch Style="{StaticResource MacShellToggleSwitchStyle}"
+                                      IsOn="{x:Bind ViewModel.CheckForUpdates, Mode=TwoWay}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Hotkeys Section -->
+            <Border Style="{StaticResource MacShellCardStyle}">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="Global Hotkeys" Style="{StaticResource MacShellTextStyleTitle}" />
+                    <StackPanel Spacing="12">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="SpaceBetween" VerticalAlignment="Center">
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Open Launcher" Style="{StaticResource MacShellTextStyleBody}" />
+                                <TextBlock Text="Win + Space" Style="{StaticResource MacShellTextStyleCaption}" Foreground="{ThemeResource MacShellTextTertiaryBrush}" />
+                            </StackPanel>
+                            <Button Style="{StaticResource MacShellButtonStyle}" Content="Change" Click="OnChangeLauncherHotkey" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="SpaceBetween" VerticalAlignment="Center">
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Open Settings" Style="{StaticResource MacShellTextStyleBody}" />
+                                <TextBlock Text="Win + ," Style="{StaticResource MacShellTextStyleCaption}" Foreground="{ThemeResource MacShellTextTertiaryBrush}" />
+                            </StackPanel>
+                            <Button Style="{StaticResource MacShellButtonStyle}" Content="Change" Click="OnChangeSettingsHotkey" />
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Advanced -->
+            <Border Style="{StaticResource MacShellCardStyle}">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="Advanced" Style="{StaticResource MacShellTextStyleTitle}" />
+                    <StackPanel Spacing="12">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="SpaceBetween" VerticalAlignment="Center">
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Enable Debug Logging" Style="{StaticResource MacShellTextStyleBody}" />
+                                <TextBlock Text="Log detailed information for troubleshooting" Style="{StaticResource MacShellTextStyleBodySecondary}" />
+                            </StackPanel>
+                            <ToggleSwitch Style="{StaticResource MacShellToggleSwitchStyle}"
+                                          IsOn="{x:Bind ViewModel.EnableDebugLogging, Mode=TwoWay}" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="SpaceBetween" VerticalAlignment="Center">
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="High Performance Mode" Style="{StaticResource MacShellTextStyleBody}" />
+                                <TextBlock Text="Reduce animations and effects for better performance" Style="{StaticResource MacShellTextStyleBodySecondary}" />
+                            </StackPanel>
+                            <ToggleSwitch Style="{StaticResource MacShellToggleSwitchStyle}"
+                                          IsOn="{x:Bind ViewModel.HighPerformanceMode, Mode=TwoWay}" />
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+    </ScrollViewer>
+</Page>

@@ -1,0 +1,135 @@
+<Page
+    x:Class="MacShell.UI.Views.AppearanceSettingsView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:MacShell.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="Transparent">
+
+    <ScrollViewer Padding="24" VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="24" MaxWidth="560">
+
+            <!-- Header -->
+            <StackPanel Spacing="8">
+                <TextBlock Text="Appearance" Style="{StaticResource MacShellTextStyleDisplay}" />
+                <TextBlock Text="Customize MacShell look and feel" Style="{StaticResource MacShellTextStyleBodySecondary}" />
+            </StackPanel>
+
+            <!-- Theme -->
+            <Border Style="{StaticResource MacShellCardStyle}">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="Theme" Style="{StaticResource MacShellTextStyleTitle}" />
+                    <StackPanel Orientation="Horizontal" Spacing="16">
+                        <RadioButton Content="Dark" GroupName="Theme" IsChecked="True" Style="{StaticResource MacShellRadioButtonStyle}"
+                                     Tag="Dark" Checked="OnThemeChanged" />
+                        <RadioButton Content="Light" GroupName="Theme" Style="{StaticResource MacShellRadioButtonStyle}"
+                                     Tag="Light" Checked="OnThemeChanged" />
+                        <RadioButton Content="System" GroupName="Theme" Style="{StaticResource MacShellRadioButtonStyle}"
+                                     Tag="System" Checked="OnThemeChanged" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Accent Color -->
+            <Border Style="{StaticResource MacShellCardStyle}">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="Accent Color" Style="{StaticResource MacShellTextStyleTitle}" />
+                    <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                        <Border x:Name="AccentColorPreview"
+                                Width="40" Height="40"
+                                CornerRadius="8"
+                                Background="{ThemeResource MacShellAccentBrush}"
+                                BorderBrush="{ThemeResource MacShellBorderBrush}"
+                                BorderThickness="1" />
+                        <ComboBox x:Name="AccentColorCombo"
+                                  Style="{StaticResource MacShellComboBoxStyle}"
+                                  Width="200"
+                                  SelectionChanged="OnAccentColorChanged">
+                            <ComboBoxItem Tag="#007AFF" Content="Blue (Default)" IsSelected="True" />
+                            <ComboBoxItem Tag="#FF9F0A" Content="Orange" />
+                            <ComboBoxItem Tag="#FF3B30" Content="Red" />
+                            <ComboBoxItem Tag="#34C759" Content="Green" />
+                            <ComboBoxItem Tag="#5E5CE6" Content="Purple" />
+                            <ComboBoxItem Tag="#FF2D92" Content="Pink" />
+                            <ComboBoxItem Tag="#00B5C0" Content="Teal" />
+                            <ComboBoxItem Tag="#FF6D00" Content="Amber" />
+                        </ComboBox>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Transparency -->
+            <Border Style="{StaticResource MacShellCardStyle}">
+                <StackPanel Spacing="16">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="SpaceBetween" VerticalAlignment="Center">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Transparency Effects" Style="{StaticResource MacShellTextStyleTitle}" />
+                            <TextBlock Text="Enable acrylic and transparency effects" Style="{StaticResource MacShellTextStyleBodySecondary}" />
+                        </StackPanel>
+                        <ToggleSwitch Style="{StaticResource MacShellToggleSwitchStyle}"
+                                      IsOn="{x:Bind ViewModel.EnableTransparency, Mode=TwoWay}" />
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="SpaceBetween" VerticalAlignment="Center" Visibility="{x:Bind ViewModel.EnableTransparency, Mode=OneWay}">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Transparency Level" Style="{StaticResource MacShellTextStyleBody}" />
+                            <TextBlock Text="{x:Bind ViewModel.TransparencyLevel, Mode=OneWay, FallbackValue=60}%" Style="{StaticResource MacShellTextStyleBodySecondary}" />
+                        </StackPanel>
+                        <Slider Style="{StaticResource MacShellSliderStyle}"
+                                Minimum="20" Maximum="90" StepFrequency="5"
+                                Value="{x:Bind ViewModel.TransparencyLevel, Mode=TwoWay}"
+                                Width="200" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Corner Radius -->
+            <Border Style="{StaticResource MacShellCardStyle}">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="Corner Radius" Style="{StaticResource MacShellTextStyleTitle}" />
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <RadioButton Content="Small (4px)" GroupName="CornerRadius"
+                                     Tag="4" Checked="OnCornerRadiusChanged" />
+                        <RadioButton Content="Medium (8px)" GroupName="CornerRadius" IsChecked="True"
+                                     Tag="8" Checked="OnCornerRadiusChanged" />
+                        <RadioButton Content="Large (12px)" GroupName="CornerRadius"
+                                     Tag="12" Checked="OnCornerRadiusChanged" />
+                        <RadioButton Content="Round (16px)" GroupName="CornerRadius"
+                                     Tag="16" Checked="OnCornerRadiusChanged" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Shadows -->
+            <Border Style="{StaticResource MacShellCardStyle}">
+                <StackPanel Spacing="16">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="SpaceBetween" VerticalAlignment="Center">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Shadows" Style="{StaticResource MacShellTextStyleTitle}" />
+                            <TextBlock Text="Show drop shadows on dock and panels" Style="{StaticResource MacShellTextStyleBodySecondary}" />
+                        </StackPanel>
+                        <ToggleSwitch Style="{StaticResource MacShellToggleSwitchStyle}"
+                                      IsOn="{x:Bind ViewModel.EnableShadows, Mode=TwoWay}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Font -->
+            <Border Style="{StaticResource MacShellCardStyle}">
+                <StackPanel Spacing="16">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="SpaceBetween" VerticalAlignment="Center">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="System Font Scaling" Style="{StaticResource MacShellTextStyleTitle}" />
+                            <TextBlock Text="Follow Windows display scaling settings" Style="{StaticResource MacShellTextStyleBodySecondary}" />
+                        </StackPanel>
+                        <ToggleSwitch Style="{StaticResource MacShellToggleSwitchStyle}"
+                                      IsOn="{x:Bind ViewModel.FollowSystemScaling, Mode=TwoWay}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+    </ScrollViewer>
+</Page>

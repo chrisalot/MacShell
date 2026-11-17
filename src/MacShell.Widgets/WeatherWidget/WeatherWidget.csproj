@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <RootNamespace>MacShell.Widgets.WeatherWidget</RootNamespace>
+    <AssemblyName>WeatherWidget</AssemblyName>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <WindowsAppSDKSelfContained>false</WindowsAppSDKSelfContained>
+    <DisableMsix>true</DisableMsix>
+    <EnableMsixTooling>false</EnableMsixTooling>
+    <GenerateAppInstallerFile>false</GenerateAppInstallerFile>
+    <GenerateMsixMetadata>false</GenerateMsixMetadata>
+    <WindowsAppSDKPackage>false</WindowsAppSDKPackage>
+    <UseWinUI>true</UseWinUI>
+    <XamlCompilerUseNetCore>true</XamlCompilerUseNetCore>
+    <UseNetCoreXamlCompiler>true</UseNetCoreXamlCompiler>
+    <TargetPlatformIdentifier>windows</TargetPlatformIdentifier>
+    <TargetPlatformVersion>10.0.19041.0</TargetPlatformVersion>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\MacShell.Core\MacShell.Core.csproj" />
+    <ProjectReference Include="..\..\MacShell.UI\MacShell.UI.csproj" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="$(CommunityToolkitMvvmVersion)" />
+    <PackageReference Include="CommunityToolkit.WinUI" Version="$(CommunityToolkitWinUIVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="**\*.xaml" Generator="MSBuild:Compile" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="widget.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+</Project>

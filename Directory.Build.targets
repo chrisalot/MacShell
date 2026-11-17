@@ -1,0 +1,7 @@
+<Project>
+  <!-- Imported after all standard targets, use to override properties set by package targets -->
+  <PropertyGroup>
+    <!-- Force use of in-process XAML compiler task instead of executable -->
+    <UseXamlCompilerExecutable>false</UseXamlCompilerExecutable>
+  </PropertyGroup>
+</Project>

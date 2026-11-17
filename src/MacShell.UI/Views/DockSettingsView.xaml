@@ -1,0 +1,138 @@
+<Page
+    x:Class="MacShell.UI.Views.DockSettingsView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:MacShell.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="Transparent">
+
+    <ScrollViewer Padding="24" VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="24" MaxWidth="560">
+
+            <!-- Header -->
+            <StackPanel Spacing="8">
+                <TextBlock Text="Dock" Style="{StaticResource MacShellTextStyleDisplay}" />
+                <TextBlock Text="Customize dock appearance and behavior" Style="{StaticResource MacShellTextStyleBodySecondary}" />
+            </StackPanel>
+
+            <!-- Position -->
+            <Border Style="{StaticResource MacShellCardStyle}">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="Position" Style="{StaticResource MacShellTextStyleTitle}" />
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <RadioButton Content="Bottom" GroupName="DockPosition" IsChecked="True" Style="{StaticResource MacShellRadioButtonStyle}" />
+                        <RadioButton Content="Left" GroupName="DockPosition" Style="{StaticResource MacShellRadioButtonStyle}" />
+                        <RadioButton Content="Right" GroupName="DockPosition" Style="{StaticResource MacShellRadioButtonStyle}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Size -->
+            <Border Style="{StaticResource MacShellCardStyle}">
+                <StackPanel Spacing="16">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="SpaceBetween" VerticalAlignment="Center">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Icon Size" Style="{StaticResource MacShellTextStyleTitle}" />
+                            <TextBlock Text="{x:Bind ViewModel.IconSize, Mode=OneWay, FallbackValue=48}" Style="{StaticResource MacShellTextStyleBodySecondary}" />
+                        </StackPanel>
+                        <Slider Style="{StaticResource MacShellSliderStyle}"
+                                Minimum="32" Maximum="64" StepFrequency="4"
+                                Value="{x:Bind ViewModel.IconSize, Mode=TwoWay}"
+                                Width="200" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Magnification -->
+            <Border Style="{StaticResource MacShellCardStyle}">
+                <StackPanel Spacing="16">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="SpaceBetween" VerticalAlignment="Center">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Magnification" Style="{StaticResource MacShellTextStyleTitle}" />
+                            <TextBlock Text="Enlarge icons on hover" Style="{StaticResource MacShellTextStyleBodySecondary}" />
+                        </StackPanel>
+                        <ToggleSwitch Style="{StaticResource MacShellToggleSwitchStyle}"
+                                      IsOn="{x:Bind ViewModel.EnableMagnification, Mode=TwoWay}" />
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="SpaceBetween" VerticalAlignment="Center" Visibility="{x:Bind ViewModel.EnableMagnification, Mode=OneWay}">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Magnification Factor" Style="{StaticResource MacShellTextStyleBody}" />
+                            <TextBlock Text="{x:Bind ViewModel.MagnificationFactor, Mode=OneWay, FallbackValue=1.4}" Style="{StaticResource MacShellTextStyleBodySecondary}" />
+                        </StackPanel>
+                        <Slider Style="{StaticResource MacShellSliderStyle}"
+                                Minimum="1.1" Maximum="2.0" StepFrequency="0.1"
+                                Value="{x:Bind ViewModel.MagnificationFactor, Mode=TwoWay}"
+                                Width="200" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Animation -->
+            <Border Style="{StaticResource MacShellCardStyle}">
+                <StackPanel Spacing="16">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="SpaceBetween" VerticalAlignment="Center">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Animations" Style="{StaticResource MacShellTextStyleTitle}" />
+                            <TextBlock Text="Smooth transitions and effects" Style="{StaticResource MacShellTextStyleBodySecondary}" />
+                        </StackPanel>
+                        <ToggleSwitch Style="{StaticResource MacShellToggleSwitchStyle}"
+                                      IsOn="{x:Bind ViewModel.EnableAnimations, Mode=TwoWay}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Running Indicators -->
+            <Border Style="{StaticResource MacShellCardStyle}">
+                <StackPanel Spacing="16">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="SpaceBetween" VerticalAlignment="Center">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Running Indicators" Style="{StaticResource MacShellTextStyleTitle}" />
+                            <TextBlock Text="Show dots under running applications" Style="{StaticResource MacShellTextStyleBodySecondary}" />
+                        </StackPanel>
+                        <ToggleSwitch Style="{StaticResource MacShellToggleSwitchStyle}"
+                                      IsOn="{x:Bind ViewModel.ShowRunningIndicators, Mode=TwoWay}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Auto-hide -->
+            <Border Style="{StaticResource MacShellCardStyle}">
+                <StackPanel Spacing="16">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="SpaceBetween" VerticalAlignment="Center">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Auto-hide Dock" Style="{StaticResource MacShellTextStyleTitle}" />
+                            <TextBlock Text="Automatically hide dock when not in use" Style="{StaticResource MacShellTextStyleBodySecondary}" />
+                        </StackPanel>
+                        <ToggleSwitch Style="{StaticResource MacShellToggleSwitchStyle}"
+                                      IsOn="{x:Bind ViewModel.AutoHide, Mode=TwoWay}" />
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="SpaceBetween" VerticalAlignment="Center" Visibility="{x:Bind ViewModel.AutoHide, Mode=OneWay}">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Show Delay" Style="{StaticResource MacShellTextStyleBody}" />
+                            <TextBlock Text="{x:Bind ViewModel.AutoHideDelay, Mode=OneWay, FallbackValue=200} ms" Style="{StaticResource MacShellTextStyleBodySecondary}" />
+                        </StackPanel>
+                        <Slider Style="{StaticResource MacShellSliderStyle}"
+                                Minimum="0" Maximum="1000" StepFrequency="50"
+                                Value="{x:Bind ViewModel.AutoHideDelay, Mode=TwoWay}"
+                                Width="200" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Pinned Apps Management -->
+            <Border Style="{StaticResource MacShellCardStyle}">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="Pinned Applications" Style="{StaticResource MacShellTextStyleTitle}" />
+                    <Button Style="{StaticResource MacShellAccentButtonStyle}"
+                            Content="Manage Pinned Apps"
+                            Click="OnManagePinnedApps" />
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+    </ScrollViewer>
+</Page>

@@ -1,0 +1,53 @@
+{
+  "id": "com.macshell.systemmonitor",
+  "name": "System Monitor Widget",
+  "version": "1.0.0",
+  "author": "MacShell Team",
+  "description": "Shows CPU, memory, and network usage",
+  "entryPoint": "MacShell.Widgets.SystemMonitorWidget.SystemMonitorWidget",
+  "assemblyName": "SystemMonitorWidget.dll",
+  "category": "System",
+  "allowMultipleInstances": false,
+  "icon": "Chart",
+  "tags": ["cpu", "memory", "network", "monitor", "system"],
+  "minMacShellVersion": "1.0.0",
+  "settingsSchema": {
+    "type": "object",
+    "properties": {
+      "showCpu": {
+        "type": "boolean",
+        "default": true,
+        "description": "Show CPU usage"
+      },
+      "showMemory": {
+        "type": "boolean",
+        "default": true,
+        "description": "Show memory usage"
+      },
+      "showNetwork": {
+        "type": "boolean",
+        "default": true,
+        "description": "Show network usage"
+      },
+      "updateInterval": {
+        "type": "integer",
+        "minimum": 500,
+        "maximum": 10000,
+        "default": 2000,
+        "description": "Update interval in milliseconds"
+      },
+      "compactMode": {
+        "type": "boolean",
+        "default": false,
+        "description": "Show compact single-line display"
+      }
+    }
+  },
+  "defaultSettings": {
+    "showCpu": true,
+    "showMemory": true,
+    "showNetwork": true,
+    "updateInterval": 2000,
+    "compactMode": false
+  }
+}

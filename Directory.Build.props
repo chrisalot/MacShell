@@ -1,0 +1,74 @@
+<Project>
+  <!-- Shared MSBuild properties for all projects in the solution -->
+  <PropertyGroup>
+    <!-- Target Framework -->
+    <TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+
+    <!-- Windows App SDK / WinUI 3 -->
+    <WindowsAppSDKVersion>1.6.241106002</WindowsAppSDKVersion>
+    <WinUIVersion>2.8.2</WinUIVersion>
+
+    <!-- Common NuGet Package Versions -->
+    <MicrosoftWindowsAppSDKVersion>$(WindowsAppSDKVersion)</MicrosoftWindowsAppSDKVersion>
+    <MicrosoftWindowsSDKBuildToolsVersion>10.0.26100.1742</MicrosoftWindowsSDKBuildToolsVersion>
+    <SystemTextJsonVersion>9.0.0</SystemTextJsonVersion>
+    <MicrosoftExtensionsLoggingVersion>9.0.0</MicrosoftExtensionsLoggingVersion>
+    <MicrosoftExtensionsDependencyInjectionVersion>9.0.0</MicrosoftExtensionsDependencyInjectionVersion>
+    <CommunityToolkitMvvmVersion>8.3.2</CommunityToolkitMvvmVersion>
+    <CommunityToolkitWinUIVersion>7.1.2</CommunityToolkitWinUIVersion>
+
+    <!-- .NET 9 Workaround: Disable self-contained to avoid PriGen path issues -->
+    <WindowsAppSDKSelfContained>false</WindowsAppSDKSelfContained>
+    <DisableMsix>true</DisableMsix>
+    <EnableMsixTooling>false</EnableMsixTooling>
+    <GenerateAppInstallerFile>false</GenerateAppInstallerFile>
+    <GenerateMsixMetadata>false</GenerateMsixMetadata>
+
+    <!-- .NET 9 Workaround: Suppress old win10-* RuntimeIdentifiers from Windows App SDK -->
+    <TargetPlatformIdentifier>windows</TargetPlatformIdentifier>
+    <TargetPlatformVersion>10.0.19041.0</TargetPlatformVersion>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <WindowsAppSDKPackage>false</WindowsAppSDKPackage>
+    <UseWinUI>true</UseWinUI>
+    <XamlCompilerUseNetCore>true</XamlCompilerUseNetCore>
+    <UseNetCoreXamlCompiler>true</UseNetCoreXamlCompiler>
+
+    <!-- Build Configuration -->
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningsAsErrors />
+    <NoWarn>$(NoWarn);CA1812;CA1822;IDE0130</NoWarn>
+
+    <!-- Output -->
+    <OutputPath>$(SolutionDir)artifacts\bin\$(Configuration)\$(MSBuildProjectName)\</OutputPath>
+    <IntermediateOutputPath>$(SolutionDir)artifacts\obj\$(Configuration)\$(MSBuildProjectName)\</IntermediateOutputPath>
+
+    <!-- Debugging -->
+    <DebugType>embedded</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+
+    <!-- Single File / Trimming (for Release) -->
+    <PublishSingleFile Condition="'$(Configuration)' == 'Release'">false</PublishSingleFile>
+    <PublishTrimmed Condition="'$(Configuration)' == 'Release'">false</PublishTrimmed>
+    <TrimMode Condition="'$(Configuration)' == 'Release'">partial</TrimMode>
+
+    <!-- Windows App SDK Self-Contained -->
+    <WindowsAppSDKSelfContained Condition="'$(Configuration)' == 'Release'">true</WindowsAppSDKSelfContained>
+    <WindowsAppSDKSelfContained Condition="'$(Configuration)' != 'Release'">false</WindowsAppSDKSelfContained>
+    <!-- Target x64 for Windows 10 19041+ and Windows 11 (runs natively on x64, via emulation on ARM64) -->
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <PlatformTarget>x64</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+
+  <!-- Analyzers -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0" PrivateAssets="all" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="$(MicrosoftWindowsSDKBuildToolsVersion)" PrivateAssets="all" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,131 @@
+<Window
+    x:Class="MacShell.UI.Views.ShellWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:MacShell.UI.Controls"
+    xmlns:converters="using:MacShell.UI.Converters"
+    xmlns:core="using:MacShell.Core.Models"
+    xmlns:coreInterfaces="using:MacShell.Core.Interfaces"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    WindowStyle="None"
+    ExtendClientAreaIntoTitleBar="True"
+    ExtendClientAreaToDecorationsHint="True"
+    Background="{ThemeResource MacShellBackgroundBrush}">
+
+    <Window.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisConverter" />
+        <converters:RunningStateToIndicatorConverter x:Key="RunningToIndicatorConverter" />
+        <converters:DockItemToIconConverter x:Key="DockItemToIconConverter" />
+        <converters:DockItemToNameConverter x:Key="DockItemToNameConverter" />
+
+        <!-- Dock Item Template -->
+        <DataTemplate x:Key="DockItemTemplate" x:DataType="core:DockItem">
+            <controls:DockItemControl
+                DataContext="{Binding}"
+                IconSource="{Binding IconPath, Converter={StaticResource DockItemToIconConverter}}"
+                IconSize="28"
+                IsRunning="{Binding IsRunning, Mode=OneWay}"
+                RunningIndicatorSize="8"
+                RunningIndicatorColor="{ThemeResource MacShellDockRunningIndicatorBrush}"
+                CornerRadius="8"
+                ToolTipTemplate="{StaticResource DockItemToolTipTemplate}"
+                Width="48"
+                Height="48" />
+        </DataTemplate>
+
+        <!-- Dock Item Tooltip Template -->
+        <DataTemplate x:Key="DockItemToolTipTemplate" x:DataType="core:DockItem">
+            <TextBlock
+                Style="{StaticResource MacShellTextStyleCaption}"
+                Text="{Binding Name}"
+                Padding="8,4" />
+        </DataTemplate>
+
+        <!-- Search Result Template -->
+        <DataTemplate x:Key="SearchResultTemplate" x:DataType="core:AppInfo">
+            <controls:SearchResultItem
+                Name="{Binding Name}"
+                Detail="{Binding ExecutablePath}"
+                IconSource="{Binding IconPath}"
+                IconSize="24"
+                Height="56"
+                Padding="16,0"
+                CornerRadius="8"
+                HoverBackground="{ThemeResource MacShellLauncherResultHoverBrush}"
+                SelectedBackground="{ThemeResource MacShellLauncherResultSelectedBrush}" />
+        </DataTemplate>
+    </Window.Resources>
+
+    <Grid x:Name="RootGrid" Background="Transparent">
+        <!-- Main content area (click-through for desktop interaction) -->
+        <Grid x:Name="ContentArea" IsHitTestVisible="False">
+            <!-- Top Bar -->
+            <controls:TopBar
+                x:Name="TopBar"
+                VerticalAlignment="Top"
+                HorizontalAlignment="Stretch"
+                Height="28"
+                SystemService="{x:Bind SystemService, Mode=OneWay}"
+                TimeFormat="HH:mm"
+                ShowSeconds="False"
+                IsHitTestVisible="True" />
+
+            <!-- Center area (empty for desktop widgets later) -->
+            <Grid x:Name="DesktopArea"
+                  VerticalAlignment="Stretch"
+                  HorizontalAlignment="Stretch"
+                  Margin="0,28,0,80" />
+
+            <!-- Dock -->
+            <controls:DockPanel
+                x:Name="DockPanel"
+                VerticalAlignment="Bottom"
+                HorizontalAlignment="Center"
+                Margin="0,0,0,16"
+                ItemsSource="{x:Bind DockItems, Mode=OneWay}"
+                ItemTemplate="{StaticResource DockItemTemplate}"
+                MagnificationFactor="1.4"
+                MagnificationRadius="80"
+                ItemSpacing="8"
+                Padding="16,8"
+                Background="{ThemeResource MacShellDockAcrylicBrush}"
+                CornerRadius="20"
+                IsHitTestVisible="True"
+                ItemClick="OnDockItemClick"
+                ItemRightClick="OnDockItemRightClick" />
+        </Grid>
+
+        <!-- Launcher Overlay (on top of everything) -->
+        <controls:LauncherWindow
+            x:Name="LauncherWindow"
+            Visibility="Collapsed"
+            AppLauncher="{x:Bind AppLauncher, Mode=OneWay}"
+            OverlayBrush="{ThemeResource MacShellLauncherOverlayBrush}"
+            PanelBackground="{ThemeResource MacShellLauncherAcrylicBrush}"
+            PanelCornerRadius="16"
+            PanelWidth="640"
+            PanelMaxHeight="480"
+            Shadow="{ThemeResource MacShellShadowLarge}"
+            IsOpen="{x:Bind IsLauncherOpen, Mode=TwoWay}"
+            Opened="OnLauncherOpened"
+            Closed="OnLauncherClosed"
+            AppLaunched="OnAppLaunched" />
+
+        <!-- Settings Button (hidden, triggered by Win+,) -->
+        <Button
+            x:Name="SettingsButton"
+            Style="{StaticResource MacShellIconButtonStyle}"
+            Content="&#xE713;"  <!-- Settings gear -->
+            FontFamily="Segoe Fluent Icons"
+            VerticalAlignment="Top"
+            HorizontalAlignment="Right"
+            Margin="0,4,12,0"
+            Width="32"
+            Height="32"
+            Visibility="Collapsed"
+            Click="OnSettingsClick"
+            ToolTipService.ToolTip="Settings (Win+,)" />
+    </Grid>
+</Window>

@@ -1,0 +1,41 @@
+<Window
+    x:Class="MacShell.UI.Views.SettingsWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:MacShell.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:views="using:MacShell.UI.Views"
+    mc:Ignorable="d"
+    Title="MacShell Settings"
+    Width="640"
+    Height="520"
+    MinWidth="560"
+    MinHeight="480"
+    Background="{ThemeResource MacShellBackgroundBrush}"
+    ExtendClientAreaIntoTitleBar="True"
+    ExtendClientAreaToDecorationsHint="True">
+
+    <Grid>
+        <NavigationView
+            x:Name="NavView"
+            Style="{StaticResource MacShellSettingsNavViewStyle}"
+            PaneDisplayMode="Left"
+            IsSettingsVisible="False"
+            ItemInvoked="OnNavItemInvoked"
+            SelectionChanged="OnNavSelectionChanged">
+
+            <NavigationView.MenuItems>
+                <NavigationViewItem x:Name="NavGeneral" Content="General" Icon="&#xE713;" Tag="General" />
+                <NavigationViewItem x:Name="NavDock" Content="Dock" Icon="&#xE75F;" Tag="Dock" />
+                <NavigationViewItem x:Name="NavAppearance" Content="Appearance" Icon="&#xE790;" Tag="Appearance" />
+                <NavigationViewItem x:Name="NavWidgets" Content="Widgets" Icon="&#xE8AF;" Tag="Widgets" />
+                <NavigationViewItem x:Name="NavAbout" Content="About" Icon="&#xE946;" Tag="About" />
+            </NavigationView.MenuItems>
+
+            <NavigationView.Content>
+                <Frame x:Name="ContentFrame" Background="Transparent" />
+            </NavigationView.Content>
+        </NavigationView>
+    </Grid>
+</Window>

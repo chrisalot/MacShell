@@ -1,0 +1,48 @@
+{
+  "id": "com.macshell.weather",
+  "name": "Weather Widget",
+  "version": "1.0.0",
+  "author": "MacShell Team",
+  "description": "Shows current weather conditions",
+  "entryPoint": "MacShell.Widgets.WeatherWidget.WeatherWidget",
+  "assemblyName": "WeatherWidget.dll",
+  "category": "Information",
+  "allowMultipleInstances": true,
+  "icon": "Weather",
+  "tags": ["weather", "temperature", "forecast"],
+  "minMacShellVersion": "1.0.0",
+  "settingsSchema": {
+    "type": "object",
+    "properties": {
+      "location": {
+        "type": "string",
+        "default": "auto",
+        "description": "Location (city name or 'auto' for IP-based)"
+      },
+      "units": {
+        "type": "string",
+        "enum": ["metric", "imperial"],
+        "default": "metric",
+        "description": "Temperature units"
+      },
+      "showCondition": {
+        "type": "boolean",
+        "default": true,
+        "description": "Show weather condition text"
+      },
+      "updateInterval": {
+        "type": "integer",
+        "minimum": 300000,
+        "maximum": 3600000,
+        "default": 900000,
+        "description": "Update interval in milliseconds (min 5 min)"
+      }
+    }
+  },
+  "defaultSettings": {
+    "location": "auto",
+    "units": "metric",
+    "showCondition": true,
+    "updateInterval": 900000
+  }
+}

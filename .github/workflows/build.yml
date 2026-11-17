@@ -1,0 +1,104 @@
+name: Build MacShell
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  SOLUTION_FILE: 'MacShell.sln'
+  BUILD_CONFIGURATION: 'Release'
+
+jobs:
+  build:
+    name: Build (Windows x64)
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore ${{ env.SOLUTION_FILE }}
+
+      - name: Build solution
+        run: dotnet build ${{ env.SOLUTION_FILE }} --configuration ${{ env.BUILD_CONFIGURATION }} --no-restore
+
+      - name: Run tests
+        run: dotnet test ${{ env.SOLUTION_FILE }} --configuration ${{ env.BUILD_CONFIGURATION }} --no-build --verbosity normal
+
+      - name: Publish MacShell.App
+        run: dotnet publish src/MacShell.App/MacShell.App.csproj --configuration ${{ env.BUILD_CONFIGURATION }} --runtime win-x64 --self-contained true -p:PublishSingleFile=true -o artifacts/publish/win-x64
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: MacShell-win-x64
+          path: artifacts/publish/win-x64/
+          retention-days: 7
+
+      - name: Upload binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: MacShell-binaries
+          path: artifacts/bin/${{ env.BUILD_CONFIGURATION }}/
+          retention-days: 7
+
+  build-arm64:
+    name: Build (Windows ARM64)
+    runs-on: windows-latest
+    timeout-minutes: 30
+    if: false  # Disabled by default - ARM64 builds require ARM64 runners
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore ${{ env.SOLUTION_FILE }}
+
+      - name: Build solution
+        run: dotnet build ${{ env.SOLUTION_FILE }} --configuration ${{ env.BUILD_CONFIGURATION }} --no-restore
+
+      - name: Run tests
+        run: dotnet test ${{ env.SOLUTION_FILE }} --configuration ${{ env.BUILD_CONFIGURATION }} --no-build --verbosity normal
+
+  release:
+    name: Create Release
+    needs: build
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    runs-on: windows-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: MacShell-win-x64
+          path: artifacts/publish/win-x64
+
+      - name: Create release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            artifacts/publish/win-x64/MacShell.exe
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

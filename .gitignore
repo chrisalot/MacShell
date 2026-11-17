@@ -1,0 +1,62 @@
+# Build outputs
+artifacts/
+bin/
+obj/
+*.nupkg
+*.snupkg
+
+# Visual Studio / Rider / VS Code
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# NuGet
+packages/
+*.nupkg
+*.snupkg
+**/packages/
+
+# OS
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+
+# Logs
+*.log
+*.log.*
+
+# Test results
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+
+# Publish outputs
+*.exe.config
+*.manifest
+
+# Windows App SDK / MSIX
+*.appx
+*.appxbundle
+*.msix
+*.msixbundle
+*.appinstaller
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
+
+# User widgets (runtime generated)
+UserWidgets/
+
+# SourceLink / Git
+*.srcinfo

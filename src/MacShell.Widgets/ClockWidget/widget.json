@@ -1,0 +1,47 @@
+{
+  "id": "com.macshell.clock",
+  "name": "Clock Widget",
+  "version": "1.0.0",
+  "author": "MacShell Team",
+  "description": "Displays current time and date",
+  "entryPoint": "MacShell.Widgets.ClockWidget.ClockWidget",
+  "assemblyName": "ClockWidget.dll",
+  "category": "System",
+  "allowMultipleInstances": true,
+  "icon": "Clock",
+  "tags": ["time", "date", "clock"],
+  "minMacShellVersion": "1.0.0",
+  "settingsSchema": {
+    "type": "object",
+    "properties": {
+      "format": {
+        "type": "string",
+        "enum": ["12h", "24h"],
+        "default": "24h",
+        "description": "Time format"
+      },
+      "showSeconds": {
+        "type": "boolean",
+        "default": false,
+        "description": "Show seconds in time"
+      },
+      "showDate": {
+        "type": "boolean",
+        "default": true,
+        "description": "Show date below time"
+      },
+      "dateFormat": {
+        "type": "string",
+        "enum": ["short", "long", "iso"],
+        "default": "short",
+        "description": "Date format style"
+      }
+    }
+  },
+  "defaultSettings": {
+    "format": "24h",
+    "showSeconds": false,
+    "showDate": true,
+    "dateFormat": "short"
+  }
+}

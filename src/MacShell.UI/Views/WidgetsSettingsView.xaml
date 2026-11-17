@@ -1,0 +1,133 @@
+<Page
+    x:Class="MacShell.UI.Views.WidgetsSettingsView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:MacShell.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="Transparent">
+
+    <ScrollViewer Padding="24" VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="24" MaxWidth="560">
+
+            <!-- Header -->
+            <StackPanel Spacing="8">
+                <TextBlock Text="Widgets" Style="{StaticResource MacShellTextStyleDisplay}" />
+                <TextBlock Text="Manage and configure widgets" Style="{StaticResource MacShellTextStyleBodySecondary}" />
+            </StackPanel>
+
+            <!-- Built-in Widgets -->
+            <Border Style="{StaticResource MacShellCardStyle}">
+                <StackPanel Spacing="16">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="SpaceBetween" VerticalAlignment="Center">
+                        <TextBlock Text="Built-in Widgets" Style="{StaticResource MacShellTextStyleTitle}" />
+                        <Button Style="{StaticResource MacShellAccentButtonStyle}"
+                                Content="Add Widget"
+                                Click="OnAddWidget" />
+                    </StackPanel>
+
+                    <ListView x:Name="BuiltInWidgetsList"
+                              SelectionMode="None"
+                              IsItemClickEnabled="True"
+                              ItemClick="OnWidgetItemClick">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource MacShellCardStyle}"
+                                        Padding="12"
+                                        Margin="0,4">
+                                    <StackPanel Orientation="Horizontal" Spacing="16">
+                                        <FontIcon Glyph="&#xE8AF;"
+                                                  FontSize="24"
+                                                  VerticalAlignment="Center"
+                                                  Foreground="{ThemeResource MacShellAccentBrush}" />
+                                        <StackPanel Spacing="4" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Name}" Style="{StaticResource MacShellTextStyleBody}" />
+                                            <TextBlock Text="{Binding Description}" Style="{StaticResource MacShellTextStyleCaption}" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </StackPanel>
+            </Border>
+
+            <!-- User Widgets -->
+            <Border Style="{StaticResource MacShellCardStyle}">
+                <StackPanel Spacing="16">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="SpaceBetween" VerticalAlignment="Center">
+                        <TextBlock Text="User Widgets" Style="{StaticResource MacShellTextStyleTitle}" />
+                        <Button Style="{StaticResource MacShellButtonStyle}"
+                                Content="Open Folder"
+                                Click="OnOpenUserWidgetsFolder" />
+                    </StackPanel>
+
+                    <TextBlock Text="Place your custom widget folders in the UserWidgets directory. Each widget should contain a widget.json manifest and compiled DLL." Style="{StaticResource MacShellTextStyleBodySecondary}" TextWrapping="Wrap" />
+
+                    <ListView x:Name="UserWidgetsList"
+                              SelectionMode="None"
+                              IsItemClickEnabled="True"
+                              ItemClick="OnUserWidgetItemClick">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource MacShellCardStyle}"
+                                        Padding="12"
+                                        Margin="0,4">
+                                    <StackPanel Orientation="Horizontal" Spacing="16">
+                                        <FontIcon Glyph="&#xE7EE;"
+                                                  FontSize="24"
+                                                  VerticalAlignment="Center"
+                                                  Foreground="{ThemeResource MacShellTextSecondaryBrush}" />
+                                        <StackPanel Spacing="4" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Name}" Style="{StaticResource MacShellTextStyleBody}" />
+                                            <TextBlock Text="{Binding Path}" Style="{StaticResource MacShellTextStyleCaption}" />
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                                            <Button Style="{StaticResource MacShellIconButtonStyle}"
+                                                    Content="&#xE713;"
+                                                    Tag="{Binding}"
+                                                    Click="OnConfigureWidget" />
+                                            <Button Style="{StaticResource MacShellIconButtonStyle}"
+                                                    Content="&#xE74D;"
+                                                    Tag="{Binding}"
+                                                    Click="OnRemoveWidget" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </StackPanel>
+            </Border>
+
+            <!-- Widget Settings -->
+            <Border Style="{StaticResource MacShellCardStyle}">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="Widget Settings" Style="{StaticResource MacShellTextStyleTitle}" />
+
+                    <StackPanel Spacing="12">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="SpaceBetween" VerticalAlignment="Center">
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Auto-reload on Change" Style="{StaticResource MacShellTextStyleBody}" />
+                                <TextBlock Text="Automatically reload widgets when files change" Style="{StaticResource MacShellTextStyleBodySecondary}" />
+                            </StackPanel>
+                            <ToggleSwitch Style="{StaticResource MacShellToggleSwitchStyle}"
+                                          IsOn="{x:Bind ViewModel.AutoReload, Mode=TwoWay}" />
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="SpaceBetween" VerticalAlignment="Center">
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Show Widget Errors" Style="{StaticResource MacShellTextStyleBody}" />
+                                <TextBlock Text="Display widget load errors in the dock" Style="{StaticResource MacShellTextStyleBodySecondary}" />
+                            </StackPanel>
+                            <ToggleSwitch Style="{StaticResource MacShellToggleSwitchStyle}"
+                                          IsOn="{x:Bind ViewModel.ShowErrors, Mode=TwoWay}" />
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+    </ScrollViewer>
+</Page>
