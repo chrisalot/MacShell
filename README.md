@@ -55,7 +55,7 @@ A Mac-inspired desktop shell for Windows, built with **C# + WinUI 3 (Windows App
 
 ```bash
 # Clone
-git clone https://github.com/macshell/macshell.git
+git clone https://github.com/chrisalot/macshell.git
 cd macshell
 
 # Build Release
