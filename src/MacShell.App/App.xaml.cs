@@ -1,14 +1,20 @@
 using System;
+using System.IO;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Markup;
 using MacShell.Core.Interfaces;
 using MacShell.Core.Models;
 using MacShell.Core.Services;
 using MacShell.UI.Views;
+using MacShell.UI.Helpers;
 
 namespace MacShell.App;
 
@@ -23,7 +29,7 @@ public sealed partial class App : Application
 
     public App()
     {
-        InitializeComponent();
+        // XAML compilation disabled - no InitializeComponent()
         UnhandledException += OnUnhandledException;
     }
 
@@ -40,6 +46,9 @@ public sealed partial class App : Application
 
         try
         {
+            // Load XAML resources at runtime
+            LoadXamlResources();
+
             // Build host with DI
             _host = CreateHostBuilder().Build();
             await _host.StartAsync();
@@ -62,6 +71,43 @@ public sealed partial class App : Application
             System.Diagnostics.Debug.WriteLine($"Failed to start MacShell: {ex.Message}");
             Current.Exit();
         }
+    }
+
+    private void LoadXamlResources()
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+        var assemblyDir = Path.GetDirectoryName(assembly.Location) ?? "";
+        var resourcesDir = Path.Combine(assemblyDir, "Resources");
+
+        // Load DarkTheme.xaml
+        var darkThemePath = Path.Combine(resourcesDir, "Themes", "DarkTheme.xaml");
+        if (File.Exists(darkThemePath))
+        {
+            var darkThemeContent = File.ReadAllText(darkThemePath);
+            var darkTheme = (ResourceDictionary)XamlReader.Load(darkThemeContent);
+            Current.Resources.MergedDictionaries.Add(darkTheme);
+        }
+
+        // Load LightTheme.xaml
+        var lightThemePath = Path.Combine(resourcesDir, "Themes", "LightTheme.xaml");
+        if (File.Exists(lightThemePath))
+        {
+            var lightThemeContent = File.ReadAllText(lightThemePath);
+            var lightTheme = (ResourceDictionary)XamlReader.Load(lightThemeContent);
+            Current.Resources.MergedDictionaries.Add(lightTheme);
+        }
+
+        // Load CommonStyles.xaml
+        var commonStylesPath = Path.Combine(resourcesDir, "Styles", "CommonStyles.xaml");
+        if (File.Exists(commonStylesPath))
+        {
+            var commonStylesContent = File.ReadAllText(commonStylesPath);
+            var commonStyles = (ResourceDictionary)XamlReader.Load(commonStylesContent);
+            Current.Resources.MergedDictionaries.Add(commonStyles);
+        }
+
+        // Add WinUI 3 resources
+        Current.Resources.MergedDictionaries.Add(new XamlControlsResources());
     }
 
     private IHostBuilder CreateHostBuilder()
@@ -116,12 +162,11 @@ public sealed partial class App : Application
         e.Handled = true;
     }
 
-    protected override void OnExit(ExitEventArgs e)
+    private void OnExit(object sender, object e)
     {
         _host?.StopAsync().GetAwaiter().GetResult();
         _host?.Dispose();
         _singleInstanceMutex.ReleaseMutex();
-        base.OnExit(e);
     }
 
     // Win32 P/Invoke for restart registration

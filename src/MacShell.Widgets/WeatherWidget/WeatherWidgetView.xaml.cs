@@ -1,16 +1,53 @@
+using System;
+using System.IO;
+using System.Reflection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Markup;
 
 namespace MacShell.Widgets.WeatherWidget;
 
 /// <summary>
 /// Weather widget view.
 /// </summary>
-public sealed partial class WeatherWidgetView : UserControl
+public sealed class WeatherWidgetView : UserControl
 {
-    public WeatherWidgetView()
+    private StackPanel? _rootPanel;
+    private FontIcon? _weatherIcon;
+    private TextBlock? _tempText;
+    private TextBlock? _conditionText;
+
+    public WeatherWidgetView() : this(null) { }
+
+    public WeatherWidgetView(WeatherWidget? widget)
     {
-        InitializeComponent();
+        LoadXaml();
+    }
+
+    private void LoadXaml()
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+        var assemblyDir = Path.GetDirectoryName(assembly.Location) ?? "";
+        var xamlPath = Path.Combine(assemblyDir, "WeatherWidgetView.xaml");
+
+        if (!File.Exists(xamlPath))
+        {
+            throw new FileNotFoundException($"WeatherWidgetView.xaml not found at {xamlPath}");
+        }
+
+        var xamlContent = File.ReadAllText(xamlPath);
+        var control = (UserControl)XamlReader.Load(xamlContent);
+
+        // Copy properties
+        this.Background = control.Background;
+        this.Padding = control.Padding;
+        this.Content = control.Content;
+
+        // Find named elements
+        _rootPanel = FindName("RootPanel") as StackPanel;
+        _weatherIcon = FindName("WeatherIcon") as FontIcon;
+        _tempText = FindName("TempText") as TextBlock;
+        _conditionText = FindName("ConditionText") as TextBlock;
     }
 
     public void UpdateDisplay(WeatherSettings settings, WeatherData? weather)
@@ -19,28 +56,39 @@ public sealed partial class WeatherWidgetView : UserControl
         {
             // Temperature
             var unit = settings.Units == "metric" ? "°C" : "°F";
-            TempText.Text = $"{weather.Temperature:F0}{unit}";
+            if (_tempText != null)
+                _tempText.Text = $"{weather.Temperature:F0}{unit}";
 
             // Weather icon based on WMO weather code
-            WeatherIcon.Glyph = GetWeatherIcon(weather.WeatherCode);
+            if (_weatherIcon != null)
+                _weatherIcon.Glyph = GetWeatherIcon(weather.WeatherCode);
 
             // Condition text
             if (settings.ShowCondition)
             {
-                ConditionText.Text = GetWeatherCondition(weather.WeatherCode);
-                ConditionText.Visibility = Visibility.Visible;
+                if (_conditionText != null)
+                {
+                    _conditionText.Text = GetWeatherCondition(weather.WeatherCode);
+                    _conditionText.Visibility = Visibility.Visible;
+                }
             }
             else
             {
-                ConditionText.Visibility = Visibility.Collapsed;
+                if (_conditionText != null)
+                    _conditionText.Visibility = Visibility.Collapsed;
             }
         }
         else
         {
-            TempText.Text = "--°";
-            WeatherIcon.Glyph = "&#xE946;"; // Cloud/unknown
-            ConditionText.Text = "Unavailable";
-            ConditionText.Visibility = settings.ShowCondition ? Visibility.Visible : Visibility.Collapsed;
+            if (_tempText != null)
+                _tempText.Text = "--°";
+            if (_weatherIcon != null)
+                _weatherIcon.Glyph = "&#xE946;"; // Cloud/unknown
+            if (_conditionText != null)
+            {
+                _conditionText.Text = "Unavailable";
+                _conditionText.Visibility = settings.ShowCondition ? Visibility.Visible : Visibility.Collapsed;
+            }
         }
     }
 

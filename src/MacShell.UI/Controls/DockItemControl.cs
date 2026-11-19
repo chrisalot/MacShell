@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Media.Imaging;
+using Microsoft.UI.Xaml.Shapes;
 using System;
 using System.Numerics;
 using MacShell.Core.Models;
@@ -254,7 +255,7 @@ public sealed class DockItemControl : Control
     {
         if (_runningIndicator != null)
         {
-            _runningIndicator.Visibility = IsRunning ? Visibility.Visible : Collapsed;
+            _runningIndicator.Visibility = IsRunning ? Visibility.Visible : Visibility.Collapsed;
             _runningIndicator.Width = RunningIndicatorSize;
             _runningIndicator.Height = RunningIndicatorSize;
 
@@ -273,10 +274,9 @@ public sealed class DockItemControl : Control
             {
                 Content = item,
                 ContentTemplate = ToolTipTemplate,
-                Placement = ToolTipPlacementMode.Top,
-                VerticalOffset = 8
             };
             ToolTipService.SetToolTip(this, _toolTip);
+            // ToolTipService.Placement and VerticalOffset are not available in current WinUI 3
         }
     }
 
@@ -317,7 +317,8 @@ public sealed class DockItemControl : Control
         _contextMenu.Items.Add(explorerItem);
 
         // Quit (if running)
-        if (item?.IsRunning == true)
+        var dockItem = DataContext as DockItem;
+        if (dockItem?.IsRunning == true)
         {
             _contextMenu.Items.Add(new MenuFlyoutSeparator());
 

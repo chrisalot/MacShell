@@ -1,5 +1,6 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 
 namespace MacShell.UI.Controls;
 
@@ -80,4 +81,6 @@ public sealed class SystemTrayItem : Control
     public static readonly DependencyProperty SpacingProperty =
         DependencyProperty.Register(nameof(Spacing), typeof(double), typeof(SystemTrayItem),
             new PropertyMetadata(6.0));
+
+    #endregion
 }

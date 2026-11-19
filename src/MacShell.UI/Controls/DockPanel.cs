@@ -9,7 +9,9 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
 using System.Numerics;
+using MacShell.Core.Interfaces;
 using MacShell.Core.Models;
+using Windows.Foundation;
 
 namespace MacShell.UI.Controls;
 
@@ -34,21 +36,21 @@ public sealed class DockPanel : Control
 
     #region ItemsSource Property
 
-    public IEnumerable<DockItem> ItemsSource
+    public IEnumerable<IDockItem> ItemsSource
     {
-        get => (IEnumerable<DockItem>)GetValue(ItemsSourceProperty);
+        get => (IEnumerable<IDockItem>)GetValue(ItemsSourceProperty);
         set => SetValue(ItemsSourceProperty, value);
     }
 
     public static readonly DependencyProperty ItemsSourceProperty =
-        DependencyProperty.Register(nameof(ItemsSource), typeof(IEnumerable<DockItem>), typeof(DockPanel),
+        DependencyProperty.Register(nameof(ItemsSource), typeof(IEnumerable<IDockItem>), typeof(DockPanel),
             new PropertyMetadata(null, OnItemsSourceChanged));
 
     private static void OnItemsSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         if (d is DockPanel panel)
         {
-            panel.OnItemsSourceChanged((IEnumerable<DockItem>?)e.OldValue, (IEnumerable<DockItem>?)e.NewValue);
+            panel.OnItemsSourceChanged((IEnumerable<IDockItem>?)e.OldValue, (IEnumerable<IDockItem>?)e.NewValue);
         }
     }
 
@@ -151,7 +153,7 @@ public sealed class DockPanel : Control
         _compositor = ElementCompositionPreview.GetElementVisual(this).Compositor;
     }
 
-    private void OnItemsSourceChanged(IEnumerable<DockItem>? oldValue, IEnumerable<DockItem>? newValue)
+    private void OnItemsSourceChanged(IEnumerable<IDockItem>? oldValue, IEnumerable<IDockItem>? newValue)
     {
         if (oldValue is System.Collections.Specialized.INotifyCollectionChanged oldObservable)
         {
@@ -173,7 +175,7 @@ public sealed class DockPanel : Control
         if (oldValue != null)
         {
             var oldItems = oldValue.ToList();
-            var newItems = newValue?.ToList() ?? new List<DockItem>();
+            var newItems = newValue?.ToList() ?? new List<IDockItem>();
             var removedItems = oldItems.Where(i => !newItems.Contains(i)).ToList();
             foreach (var item in removedItems)
             {
@@ -228,7 +230,11 @@ public sealed class DockPanel : Control
     {
         if (_itemsRepeater == null || _compositor == null) return;
 
-        var items = _itemsRepeater.GetElements().OfType<DockItemControl>().ToList();
+        // ItemsRepeater doesn't have GetElements() - use ItemsSource to track items
+        var itemsSource = _itemsRepeater.ItemsSource as IEnumerable<IDockItem>;
+        if (itemsSource == null) return;
+
+        var items = itemsSource.Select((item, index) => _itemsRepeater.TryGetElement(index) as DockItemControl).Where(c => c != null).ToList();
         var hoveredIndex = items.IndexOf(hoveredItem);
         if (hoveredIndex < 0) return;
 
@@ -256,7 +262,10 @@ public sealed class DockPanel : Control
     {
         if (_itemsRepeater == null) return;
 
-        var items = _itemsRepeater.GetElements().OfType<DockItemControl>().ToList();
+        var itemsSource = _itemsRepeater.ItemsSource as IEnumerable<IDockItem>;
+        if (itemsSource == null) return;
+
+        var items = itemsSource.Select((item, index) => _itemsRepeater.TryGetElement(index) as DockItemControl).Where(c => c != null).ToList();
         foreach (var item in items)
         {
             AnimateItemScale(item, 1.0);
@@ -277,14 +286,7 @@ public sealed class DockPanel : Control
         animation.IterationBehavior = AnimationIterationBehavior.Count;
         animation.IterationCount = 1;
 
-        // Use spring-like easing
-        var easing = _compositor.CreateSpringVector3NaturalMotion();
-        // Note: ScalarKeyFrameAnimation doesn't support spring easing directly
-        // We'll use a cubic ease out for smooth deceleration
-        var cubicEase = _compositor.CreateCubicEase();
-        cubicEase.ControlPoint1 = new Vector2(0.25f, 0.1f);
-        cubicEase.ControlPoint2 = new Vector2(0.25f, 1f);
-        animation.EasingFunction = cubicEase;
+        // EasingFunction not available in current WinUI 3 - using linear interpolation
 
         visual.StartAnimation("Scale.X", animation);
         visual.StartAnimation("Scale.Y", animation);
@@ -300,7 +302,7 @@ public sealed class DockPanel : Control
     private double GetItemCenterX(DockItemControl item)
     {
         var transform = item.TransformToVisual(this);
-        var point = transform.TransformPoint(new Windows.Foundation.Point(0, 0));
+        var point = transform.TransformPoint(new Point(0, 0));
         return point.X + item.ActualWidth / 2;
     }
 }

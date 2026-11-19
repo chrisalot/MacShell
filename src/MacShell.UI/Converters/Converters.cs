@@ -41,9 +41,9 @@ public sealed class BoolToVisibilityHiddenConverter : IValueConverter
         if (value is bool boolValue)
         {
             var invert = parameter?.ToString()?.Equals("invert", StringComparison.OrdinalIgnoreCase) == true;
-            return (boolValue ^ invert) ? Visibility.Visible : Visibility.Hidden;
+            return (boolValue ^ invert) ? Visibility.Visible : Visibility.Collapsed;
         }
-        return Visibility.Hidden;
+        return Visibility.Collapsed;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, string language)

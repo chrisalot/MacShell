@@ -1,6 +1,8 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Input;
@@ -8,30 +10,42 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media.Animation;
+using Microsoft.UI.Xaml.Markup;
 using Windows.System;
-using Windows.UI.Core;
+using Windows.UI.Input;
+using WinRT.Interop;
 using MacShell.Core.Interfaces;
 using MacShell.Core.Models;
 using MacShell.Core.Services;
+using MacShell.UI.Controls;
+using MacShell.UI.Helpers;
 
 namespace MacShell.UI.Views;
 
 /// <summary>
 /// Main shell window - full-screen transparent overlay hosting Dock, Top Bar, and Launcher.
 /// </summary>
-public sealed partial class ShellWindow : Window
+public sealed class ShellWindow : Window
 {
     private readonly DockManager _dockManager;
     private readonly IAppLauncher _appLauncher;
     private readonly ISystemService _systemService;
     private readonly IWindowManager _windowManager;
-    private readonly DispatcherQueue _dispatcherQueue;
+    private readonly Microsoft.UI.Dispatching.DispatcherQueue _dispatcherQueue;
     private readonly GlobalHotkeyManager _hotkeyManager;
 
-    private ObservableCollection<DockItem> _dockItems = new();
+    private ObservableCollection<IDockItem> _dockItems = new();
     private bool _isLauncherOpen;
     private IntPtr _hwnd;
+
+    // Named XAML elements
+    private Grid? _rootGrid;
+    private Grid? _contentArea;
+    private TopBar? _topBar;
+    private Grid? _desktopArea;
+    private DockPanel? _dockPanel;
+    private LauncherWindow? _launcherWindow;
+    private Button? _settingsButton;
 
     public ShellWindow(
         DockManager dockManager,
@@ -43,23 +57,17 @@ public sealed partial class ShellWindow : Window
         _appLauncher = appLauncher;
         _systemService = systemService;
         _windowManager = windowManager;
-        _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+        _dispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
         _hotkeyManager = new GlobalHotkeyManager();
 
-        InitializeComponent();
-
-        // Bind data
-        DockItems = _dockItems;
-        SystemService = _systemService;
-        AppLauncher = _appLauncher;
-
-        Loaded += OnLoaded;
-        Unloaded += OnUnloaded;
+        LoadXaml();
+        SetupBindings();
+        SetupEventHandlers();
     }
 
     #region Public Properties
 
-    public ObservableCollection<DockItem> DockItems
+    public ObservableCollection<IDockItem> DockItems
     {
         get => _dockItems;
         private set => _dockItems = value;
@@ -74,11 +82,88 @@ public sealed partial class ShellWindow : Window
         set
         {
             _isLauncherOpen = value;
-            // Property changed notification would go here if we implemented INotifyPropertyChanged
+            if (_launcherWindow != null)
+            {
+                _launcherWindow.IsOpen = value;
+            }
         }
     }
 
     #endregion
+
+    private void LoadXaml()
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+        var assemblyDir = Path.GetDirectoryName(assembly.Location) ?? "";
+        var xamlPath = Path.Combine(assemblyDir, "Views", "ShellWindow.xaml");
+
+        if (!File.Exists(xamlPath))
+        {
+            throw new FileNotFoundException($"ShellWindow.xaml not found at {xamlPath}");
+        }
+
+        var xamlContent = File.ReadAllText(xamlPath);
+        var window = (Window)XamlReader.Load(xamlContent);
+
+        // Copy content from loaded window to this instance
+        // Note: WinUI 3 Window doesn't have Background, Width, Height, etc. - those are on the root element
+        this.Content = window.Content;
+
+        // Find named elements from the loaded content
+        if (this.Content is FrameworkElement root)
+        {
+            _rootGrid = root.FindName("RootGrid") as Grid;
+            _contentArea = root.FindName("ContentArea") as Grid;
+            _topBar = root.FindName("TopBar") as TopBar;
+            _desktopArea = root.FindName("DesktopArea") as Grid;
+            _dockPanel = root.FindName("DockPanel") as DockPanel;
+            _launcherWindow = root.FindName("LauncherWindow") as LauncherWindow;
+            _settingsButton = root.FindName("SettingsButton") as Button;
+
+            // Subscribe to events on root element (Window doesn't have Loaded/Unloaded in WinUI 3)
+            root.Loaded += OnLoaded;
+            root.Unloaded += OnUnloaded;
+        }
+    }
+
+    private void SetupBindings()
+    {
+        if (_topBar != null)
+        {
+            _topBar.SystemService = _systemService;
+        }
+
+        if (_dockPanel != null)
+        {
+            _dockPanel.ItemsSource = _dockItems;
+        }
+
+        if (_launcherWindow != null)
+        {
+            _launcherWindow.AppLauncher = _appLauncher;
+        }
+    }
+
+    private void SetupEventHandlers()
+    {
+        if (_dockPanel != null)
+        {
+            _dockPanel.ItemClick += OnDockItemClick;
+            _dockPanel.ItemRightClick += OnDockItemRightClick;
+        }
+
+        if (_launcherWindow != null)
+        {
+            _launcherWindow.Opened += OnLauncherOpened;
+            _launcherWindow.Closed += OnLauncherClosed;
+            _launcherWindow.AppLaunched += OnAppLaunched;
+        }
+
+        if (_settingsButton != null)
+        {
+            _settingsButton.Click += OnSettingsClick;
+        }
+    }
 
     private async void OnLoaded(object sender, RoutedEventArgs e)
     {
@@ -130,7 +215,8 @@ public sealed partial class ShellWindow : Window
         if (_hwnd == IntPtr.Zero) return;
 
         // Get AppWindow for advanced configuration
-        var windowId = Win32Interop.GetWindowIdFromWindow(_hwnd);
+        var windowIdPtr = Win32Interop.GetWindowIdFromWindow(_hwnd);
+        var windowId = new Microsoft.UI.WindowId((ulong)windowIdPtr);
         var appWindow = AppWindow.GetFromWindowId(windowId);
 
         if (appWindow != null)
@@ -181,12 +267,6 @@ public sealed partial class ShellWindow : Window
     private void OnItemRunningStateChanged(object? sender, MacShell.Core.Services.DockItemRunningStateChangedEventArgs e)
     {
         // The UI will update automatically via data binding
-        // But we might want to animate the running indicator appearance
-        _dispatcherQueue.TryEnqueue(() =>
-        {
-            // Find the DockItemControl and trigger animation
-            // This would require walking the visual tree
-        });
     }
 
     private void RegisterHotkeys()
@@ -194,8 +274,8 @@ public sealed partial class ShellWindow : Window
         // Win+Space for launcher
         _hotkeyManager.RegisterHotkey(HotkeyId.Launcher, VirtualKey.Space, VirtualKeyModifiers.Windows);
 
-        // Win+, for settings
-        _hotkeyManager.RegisterHotkey(HotkeyId.Settings, VirtualKey.Comma, VirtualKeyModifiers.Windows);
+        // Win+, for settings (VK_OEM_COMMA = 0xBC)
+        _hotkeyManager.RegisterHotkey(HotkeyId.Settings, (VirtualKey)0xBC, VirtualKeyModifiers.Windows);
 
         _hotkeyManager.HotkeyPressed += OnHotkeyPressed;
     }
@@ -219,7 +299,6 @@ public sealed partial class ShellWindow : Window
     private void ToggleLauncher()
     {
         IsLauncherOpen = !IsLauncherOpen;
-        LauncherWindow.IsOpen = IsLauncherOpen;
     }
 
     private void OnLauncherOpened(object? sender, EventArgs e)
@@ -237,7 +316,7 @@ public sealed partial class ShellWindow : Window
         // App launched successfully
     }
 
-    private void OnDockItemClick(object? sender, DockItem e)
+    private void OnDockItemClick(object? sender, IDockItem e)
     {
         if (e.IsRunning && e.WindowHandle != IntPtr.Zero)
         {
@@ -251,7 +330,7 @@ public sealed partial class ShellWindow : Window
         }
     }
 
-    private void OnDockItemRightClick(object? sender, DockItem e)
+    private void OnDockItemRightClick(object? sender, IDockItem e)
     {
         // Context menu is handled by DockItemControl
     }
@@ -327,7 +406,7 @@ internal sealed class GlobalHotkeyManager
     {
         var wc = new WNDCLASS
         {
-            lpfnWndProc = WndProc,
+            lpfnWndProc = Marshal.GetFunctionPointerForDelegate(_wndProcDelegate),
             hInstance = GetModuleHandle(null),
             lpszClassName = "MacShellHotkeyWindow"
         };
@@ -345,6 +424,11 @@ internal sealed class GlobalHotkeyManager
         }
         return DefWindowProc(hwnd, msg, wParam, lParam);
     }
+
+    // Static delegate for WndProc to avoid GC issues
+    private static readonly WndProcDelegate _wndProcDelegate = WndProc;
+
+    private delegate IntPtr WndProcDelegate(IntPtr hwnd, uint msg, IntPtr wParam, IntPtr lParam);
 
     // Win32 P/Invoke
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]

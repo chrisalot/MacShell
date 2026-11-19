@@ -1,5 +1,4 @@
 <Page
-    x:Class="MacShell.UI.Views.AboutSettingsView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:MacShell.UI.Controls"
@@ -43,15 +42,15 @@
                 <StackPanel Spacing="12">
                     <TextBlock Text="Links" Style="{StaticResource MacShellTextStyleTitle}" />
                     <StackPanel Orientation="Horizontal" Spacing="16" HorizontalAlignment="Center">
-                        <Button Style="{StaticResource MacShellButtonStyle}"
-                                Content="GitHub"
-                                Click="OnGitHubClick" />
-                        <Button Style="{StaticResource MacShellButtonStyle}"
-                                Content="Documentation"
-                                Click="OnDocsClick" />
-                        <Button Style="{StaticResource MacShellButtonStyle}"
-                                Content="Report Issue"
-                                Click="OnIssueClick" />
+                        <Button x:Name="GitHubButton"
+                                Style="{StaticResource MacShellButtonStyle}"
+                                Content="GitHub" />
+                        <Button x:Name="DocsButton"
+                                Style="{StaticResource MacShellButtonStyle}"
+                                Content="Documentation" />
+                        <Button x:Name="IssueButton"
+                                Style="{StaticResource MacShellButtonStyle}"
+                                Content="Report Issue" />
                     </StackPanel>
                 </StackPanel>
             </Border>
@@ -63,10 +62,10 @@
                     <TextBlock Text="MIT License - Free for personal and commercial use."
                                Style="{StaticResource MacShellTextStyleBody}"
                                TextWrapping="Wrap" />
-                    <Button Style="{StaticResource MacShellButtonStyle}"
+                    <Button x:Name="LicenseButton"
+                            Style="{StaticResource MacShellButtonStyle}"
                             Content="View License"
-                            HorizontalAlignment="Left"
-                            Click="OnLicenseClick" />
+                            HorizontalAlignment="Left" />
                 </StackPanel>
             </Border>
 

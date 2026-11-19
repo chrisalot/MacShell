@@ -30,7 +30,7 @@ internal static class Program
         try
         {
             // Initialize WinUI 3
-            XamlApplication.Start(_ => new App());
+            Application.Start(_ => new App());
         }
         catch (Exception ex)
         {

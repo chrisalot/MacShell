@@ -1,5 +1,4 @@
 <Window
-    x:Class="MacShell.UI.Views.SettingsWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:MacShell.UI.Controls"
@@ -21,9 +20,7 @@
             x:Name="NavView"
             Style="{StaticResource MacShellSettingsNavViewStyle}"
             PaneDisplayMode="Left"
-            IsSettingsVisible="False"
-            ItemInvoked="OnNavItemInvoked"
-            SelectionChanged="OnNavSelectionChanged">
+            IsSettingsVisible="False">
 
             <NavigationView.MenuItems>
                 <NavigationViewItem x:Name="NavGeneral" Content="General" Icon="&#xE713;" Tag="General" />

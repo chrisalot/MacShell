@@ -15,10 +15,18 @@
     <GenerateMsixMetadata>false</GenerateMsixMetadata>
     <WindowsAppSDKPackage>false</WindowsAppSDKPackage>
     <UseWinUI>true</UseWinUI>
-    <UseXamlCompilerExecutable>false</UseXamlCompilerExecutable>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <TargetPlatformIdentifier>windows</TargetPlatformIdentifier>
     <TargetPlatformVersion>10.0.19041.0</TargetPlatformVersion>
     <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+    <!-- Disable XAML compiler to avoid WMC9999 error - we use runtime XAML loading via XamlReader.Load() -->
+    <UseXamlCompilerExecutable>false</UseXamlCompilerExecutable>
+    <XamlCompilerUseNetCore>false</XamlCompilerUseNetCore>
+    <UseNetCoreXamlCompiler>false</UseNetCoreXamlCompiler>
+    <DisableXbfCompiler>true</DisableXbfCompiler>
+    <DisableXbfGeneration>true</DisableXbfGeneration>
+    <EnableXamlCompilation>false</EnableXamlCompilation>
+    <XamlDebuggingInformation>false</XamlDebuggingInformation>
   </PropertyGroup>
 
   <ItemGroup>
@@ -29,6 +37,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="**\*.xaml" Generator="MSBuild:Compile" />
+    <!-- Only include XAML files from source directories, not from output directories -->
+    <Content Include="Views\*.xaml;Resources\**\*.xaml" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
+
+  <!-- Override XAML compiler settings after targets import to disable XAML compilation -->
+  <PropertyGroup>
+    <UseXamlCompilerExecutable>false</UseXamlCompilerExecutable>
+    <DisableXbfGeneration>true</DisableXbfGeneration>
+    <EnableXamlCompilation>false</EnableXamlCompilation>
+  </PropertyGroup>
 </Project>

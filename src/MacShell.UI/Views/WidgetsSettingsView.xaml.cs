@@ -1,6 +1,9 @@
 using System.Collections.ObjectModel;
+using System.IO;
+using System.Reflection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Navigation;
 using CommunityToolkit.Mvvm.ComponentModel;
 using MacShell.Core.Models;
@@ -10,7 +13,7 @@ namespace MacShell.UI.Views;
 /// <summary>
 /// View model for Widgets settings.
 /// </summary>
-internal sealed partial class WidgetsSettingsViewModel : ObservableObject
+public sealed partial class WidgetsSettingsViewModel : ObservableObject
 {
     [ObservableProperty]
     private bool _autoReload = true;
@@ -28,7 +31,7 @@ internal sealed partial class WidgetsSettingsViewModel : ObservableObject
 /// <summary>
 /// Widget info for display in settings.
 /// </summary>
-internal sealed partial class WidgetInfo : ObservableObject
+public sealed partial class WidgetInfo : ObservableObject
 {
     [ObservableProperty]
     private string _name = "";
@@ -46,14 +49,79 @@ internal sealed partial class WidgetInfo : ObservableObject
 /// <summary>
 /// Widgets settings page.
 /// </summary>
-public sealed partial class WidgetsSettingsView : Page
+public sealed class WidgetsSettingsView : Page
 {
     public WidgetsSettingsViewModel ViewModel { get; } = new();
 
+    private ListView? _builtInWidgetsList;
+    private ListView? _userWidgetsList;
+    private Button? _addWidgetButton;
+    private Button? _openUserWidgetsFolderButton;
+    private Button? _configureWidgetButton;
+    private Button? _removeWidgetButton;
+    private ToggleSwitch? _autoReloadToggle;
+    private ToggleSwitch? _showErrorsToggle;
+
     public WidgetsSettingsView()
     {
-        InitializeComponent();
+        LoadXaml();
+        SetupEventHandlers();
         DataContext = ViewModel;
+    }
+
+    private void LoadXaml()
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+        var assemblyDir = Path.GetDirectoryName(assembly.Location) ?? "";
+        var xamlPath = Path.Combine(assemblyDir, "Views", "WidgetsSettingsView.xaml");
+
+        if (!File.Exists(xamlPath))
+        {
+            throw new FileNotFoundException($"WidgetsSettingsView.xaml not found at {xamlPath}");
+        }
+
+        var xamlContent = File.ReadAllText(xamlPath);
+        var page = (Page)XamlReader.Load(xamlContent);
+
+        // Copy properties
+        this.Background = page.Background;
+        this.Content = page.Content;
+
+        // Find named elements
+        _builtInWidgetsList = FindName("BuiltInWidgetsList") as ListView;
+        _userWidgetsList = FindName("UserWidgetsList") as ListView;
+        _addWidgetButton = FindName("AddWidgetButton") as Button;
+        _openUserWidgetsFolderButton = FindName("OpenUserWidgetsFolderButton") as Button;
+        _configureWidgetButton = FindName("ConfigureWidgetButton") as Button;
+        _removeWidgetButton = FindName("RemoveWidgetButton") as Button;
+        _autoReloadToggle = FindName("AutoReloadToggle") as ToggleSwitch;
+        _showErrorsToggle = FindName("ShowErrorsToggle") as ToggleSwitch;
+
+        // Bind toggles to ViewModel
+        if (_autoReloadToggle != null)
+            _autoReloadToggle.IsOn = ViewModel.AutoReload;
+        if (_showErrorsToggle != null)
+            _showErrorsToggle.IsOn = ViewModel.ShowErrors;
+    }
+
+    private void SetupEventHandlers()
+    {
+        if (_addWidgetButton != null)
+            _addWidgetButton.Click += OnAddWidget;
+        if (_openUserWidgetsFolderButton != null)
+            _openUserWidgetsFolderButton.Click += OnOpenUserWidgetsFolder;
+        if (_configureWidgetButton != null)
+            _configureWidgetButton.Click += OnConfigureWidget;
+        if (_removeWidgetButton != null)
+            _removeWidgetButton.Click += OnRemoveWidget;
+        if (_builtInWidgetsList != null)
+            _builtInWidgetsList.ItemClick += OnWidgetItemClick;
+        if (_userWidgetsList != null)
+            _userWidgetsList.ItemClick += OnUserWidgetItemClick;
+        if (_autoReloadToggle != null)
+            _autoReloadToggle.Toggled += (s, e) => ViewModel.AutoReload = _autoReloadToggle.IsOn;
+        if (_showErrorsToggle != null)
+            _showErrorsToggle.Toggled += (s, e) => ViewModel.ShowErrors = _showErrorsToggle.IsOn;
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)

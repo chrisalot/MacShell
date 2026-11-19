@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -47,7 +48,7 @@ public sealed class ClockWidget : IWidget
             var savedSettings = _context.SettingsService.GetSettingsAsync(Manifest.Id).Result;
             if (savedSettings != null)
             {
-                _settings = savedSettings.Data.Deserialize<ClockSettings>() ?? new ClockSettings();
+                _settings = JsonSerializer.Deserialize<ClockSettings>(savedSettings.Data) ?? new ClockSettings();
             }
         }
 
@@ -70,7 +71,7 @@ public sealed class ClockWidget : IWidget
         return Task.CompletedTask;
     }
 
-    public FrameworkElement GetView()
+    public object GetView()
     {
         return _view ?? new ClockWidgetView(this);
     }

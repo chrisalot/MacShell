@@ -1,20 +1,20 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using Windows.UI;
 
 namespace MacShell.UI.Controls;
 
 /// <summary>
 /// A panel with acrylic background that can be toggled for performance.
 /// </summary>
-public sealed class AcrylicPanel : Border
+public sealed class AcrylicPanel : Panel
 {
     private AcrylicBrush? _acrylicBrush;
     private bool _isAcrylicEnabled = true;
 
     public AcrylicPanel()
     {
-        DefaultStyleKey = typeof(AcrylicPanel);
         Loaded += OnLoaded;
     }
 
@@ -94,7 +94,7 @@ public sealed class AcrylicPanel : Border
     {
         if (!_isAcrylicEnabled || AcrylicBrush == null)
         {
-            Background = FallbackBrush ?? new SolidColorBrush(Colors.Transparent);
+            Background = FallbackBrush ?? new SolidColorBrush(Microsoft.UI.Colors.Transparent);
             return;
         }
 
@@ -105,7 +105,7 @@ public sealed class AcrylicPanel : Border
         }
         else
         {
-            Background = FallbackBrush ?? AcrylicBrush.FallbackColor;
+            Background = FallbackBrush ?? new SolidColorBrush(AcrylicBrush.FallbackColor);
         }
     }
 

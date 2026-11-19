@@ -1,7 +1,16 @@
 <Project>
-  <!-- Imported after all standard targets, use to override properties set by package targets -->
+  <!-- Disable XAML compilation globally - we use runtime XAML loading via XamlReader.Load() -->
   <PropertyGroup>
-    <!-- Force use of in-process XAML compiler task instead of executable -->
     <UseXamlCompilerExecutable>false</UseXamlCompilerExecutable>
+    <DisableXbfGeneration>true</DisableXbfGeneration>
+    <EnableXamlCompilation>false</EnableXamlCompilation>
+    <XamlCompilerUseNetCore>false</XamlCompilerUseNetCore>
+    <UseNetCoreXamlCompiler>false</UseNetCoreXamlCompiler>
+    <DisableXbfCompiler>true</DisableXbfCompiler>
   </PropertyGroup>
+
+  <!-- Remove any XAML files from the Page item group to prevent XAML compilation -->
+  <ItemGroup>
+    <Page Remove="**\*.xaml" />
+  </ItemGroup>
 </Project>

@@ -16,11 +16,17 @@
     <GenerateMsixMetadata>false</GenerateMsixMetadata>
     <WindowsAppSDKPackage>false</WindowsAppSDKPackage>
     <UseWinUI>true</UseWinUI>
-    <XamlCompilerUseNetCore>true</XamlCompilerUseNetCore>
-    <UseNetCoreXamlCompiler>true</UseNetCoreXamlCompiler>
     <TargetPlatformIdentifier>windows</TargetPlatformIdentifier>
     <TargetPlatformVersion>10.0.19041.0</TargetPlatformVersion>
     <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+    <!-- Disable XAML compiler to avoid WMC9999 error -->
+    <UseXamlCompilerExecutable>false</UseXamlCompilerExecutable>
+    <XamlCompilerUseNetCore>false</XamlCompilerUseNetCore>
+    <UseNetCoreXamlCompiler>false</UseNetCoreXamlCompiler>
+    <DisableXbfCompiler>true</DisableXbfCompiler>
+    <DisableXbfGeneration>true</DisableXbfGeneration>
+    <EnableXamlCompilation>false</EnableXamlCompilation>
+    <XamlDebuggingInformation>false</XamlDebuggingInformation>
   </PropertyGroup>
 
   <ItemGroup>
@@ -31,12 +37,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="**\*.xaml" Generator="MSBuild:Compile" />
+    <Content Include="*.xaml" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
     <None Update="widget.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>weather-widget.json</TargetPath>
     </None>
   </ItemGroup>
 </Project>

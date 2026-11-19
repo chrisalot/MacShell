@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -50,7 +51,7 @@ public sealed class SystemMonitorWidget : IWidget
             var savedSettings = _context.SettingsService.GetSettingsAsync(Manifest.Id).Result;
             if (savedSettings != null)
             {
-                _settings = savedSettings.Data.Deserialize<SystemMonitorSettings>() ?? new SystemMonitorSettings();
+                _settings = JsonSerializer.Deserialize<SystemMonitorSettings>(savedSettings.Data) ?? new SystemMonitorSettings();
             }
         }
 
@@ -89,7 +90,7 @@ public sealed class SystemMonitorWidget : IWidget
         }
     }
 
-    public FrameworkElement GetView()
+    public object GetView()
     {
         return _view ?? new SystemMonitorWidgetView(this);
     }

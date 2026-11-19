@@ -7,8 +7,8 @@
     <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
 
     <!-- Windows App SDK / WinUI 3 -->
-    <WindowsAppSDKVersion>1.6.241106002</WindowsAppSDKVersion>
-    <WinUIVersion>2.8.2</WinUIVersion>
+    <WindowsAppSDKVersion>1.6.241106001</WindowsAppSDKVersion>
+    <WinUIVersion>2.8.3</WinUIVersion>
 
     <!-- Common NuGet Package Versions -->
     <MicrosoftWindowsAppSDKVersion>$(WindowsAppSDKVersion)</MicrosoftWindowsAppSDKVersion>
@@ -33,8 +33,33 @@
     <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <WindowsAppSDKPackage>false</WindowsAppSDKPackage>
     <UseWinUI>true</UseWinUI>
-    <XamlCompilerUseNetCore>true</XamlCompilerUseNetCore>
-    <UseNetCoreXamlCompiler>true</UseNetCoreXamlCompiler>
+    <!-- Disable XAML compiler since we're using runtime XAML loading via XamlReader.Load() -->
+    <UseXamlCompilerExecutable>false</UseXamlCompilerExecutable>
+    <XamlCompilerUseNetCore>false</XamlCompilerUseNetCore>
+    <UseNetCoreXamlCompiler>false</UseNetCoreXamlCompiler>
+    <DisableXbfCompiler>true</DisableXbfCompiler>
+    <DisableXbfGeneration>true</DisableXbfGeneration>
+    <EnableXamlCompilation>false</EnableXamlCompilation>
+    <XamlDebuggingInformation>false</XamlDebuggingInformation>
+
+    <!-- Disable MRT/PRI generation and Appx packaging tasks that require Visual Studio MSBuild tools -->
+    <AppxGeneratePriEnabled>false</AppxGeneratePriEnabled>
+    <AppxGetPackagePropertiesEnabled>false</AppxGetPackagePropertiesEnabled>
+    <AppxPackage>false</AppxPackage>
+    <UseSdkBuildToolsPackage>false</UseSdkBuildToolsPackage>
+    <WindowsSDKBuildToolsVersion></WindowsSDKBuildToolsVersion>
+    <EnableDefaultWindowsAppSdkPRIResourceItems>false</EnableDefaultWindowsAppSdkPRIResourceItems>
+    <GenerateLibraryLayout>false</GenerateLibraryLayout>
+    <EnableCoreMrtTooling>false</EnableCoreMrtTooling>
+    <EnablePriGenTooling>false</EnablePriGenTooling>
+    <!-- Disable XAML compiler globally to avoid WMC9999 error - we use runtime XAML loading via XamlReader.Load() -->
+    <UseXamlCompilerExecutable>false</UseXamlCompilerExecutable>
+    <XamlCompilerUseNetCore>false</XamlCompilerUseNetCore>
+    <UseNetCoreXamlCompiler>false</UseNetCoreXamlCompiler>
+    <DisableXbfCompiler>true</DisableXbfCompiler>
+    <DisableXbfGeneration>true</DisableXbfGeneration>
+    <EnableXamlCompilation>false</EnableXamlCompilation>
+    <XamlDebuggingInformation>false</XamlDebuggingInformation>
 
     <!-- Build Configuration -->
     <Nullable>enable</Nullable>
@@ -43,13 +68,28 @@
     <WarningsAsErrors />
     <NoWarn>$(NoWarn);CA1812;CA1822;IDE0130</NoWarn>
 
-    <!-- Output -->
-    <OutputPath>$(SolutionDir)artifacts\bin\$(Configuration)\$(MSBuildProjectName)\</OutputPath>
-    <IntermediateOutputPath>$(SolutionDir)artifacts\obj\$(Configuration)\$(MSBuildProjectName)\</IntermediateOutputPath>
+    <!-- Output - use default SDK paths to avoid Content file copy issues -->
+    <BaseOutputPath>$(SolutionDir)artifacts\bin\</BaseOutputPath>
+    <BaseIntermediateOutputPath>$(SolutionDir)artifacts\obj\</BaseIntermediateOutputPath>
 
     <!-- Debugging -->
     <DebugType>embedded</DebugType>
     <DebugSymbols>true</DebugSymbols>
+
+    <!-- Disable auto-generated assembly info to avoid duplicates with project-level assembly info -->
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
+    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+    <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
+    <GenerateNeutralResourcesLanguageAttribute>false</GenerateNeutralResourcesLanguageAttribute>
+    <DisableImplicitFrameworkAttributes>true</DisableImplicitFrameworkAttributes>
+    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
 
     <!-- Single File / Trimming (for Release) -->
     <PublishSingleFile Condition="'$(Configuration)' == 'Release'">false</PublishSingleFile>
@@ -69,6 +109,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0" PrivateAssets="all" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="$(MicrosoftWindowsSDKBuildToolsVersion)" PrivateAssets="all" />
+    <PackageReference Include="System.Security.Permissions" Version="6.0.0" PrivateAssets="all" />
   </ItemGroup>
 </Project>

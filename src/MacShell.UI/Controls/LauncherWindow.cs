@@ -1,13 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
+using Microsoft.UI;
 using MacShell.Core.Interfaces;
 using MacShell.Core.Models;
 
@@ -70,10 +73,16 @@ public sealed class LauncherWindow : Control
 
     private static void OnOverlayBrushChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        if (d is LauncherWindow launcher && launcher._overlayVisual != null)
+        if (d is LauncherWindow launcher && launcher._overlayVisual != null && launcher._compositor != null)
         {
-            launcher._overlayVisual.Brush = launcher.OverlayBrush as CompositionBrush ??
-                launcher._compositor!.CreateColorBrush(Colors.Black);
+            if (launcher.OverlayBrush is SolidColorBrush solidBrush)
+            {
+                launcher._overlayVisual.Brush = launcher._compositor.CreateColorBrush(solidBrush.Color);
+            }
+            else
+            {
+                launcher._overlayVisual.Brush = launcher._compositor.CreateColorBrush(Microsoft.UI.Colors.Black);
+            }
         }
     }
 
@@ -218,7 +227,7 @@ public sealed class LauncherWindow : Control
         // Create overlay visual for dimming background
         _overlayVisual = _compositor.CreateSpriteVisual();
         _overlayVisual.Size = new Vector2((float)ActualWidth, (float)ActualHeight);
-        _overlayVisual.Brush = _compositor.CreateColorBrush(Colors.Black);
+        _overlayVisual.Brush = _compositor.CreateColorBrush(Microsoft.UI.Colors.Black);
         _overlayVisual.Opacity = 0f;
         ElementCompositionPreview.SetElementChildVisual(this, _overlayVisual);
     }
@@ -248,7 +257,7 @@ public sealed class LauncherWindow : Control
 
         Visibility = Visibility.Visible;
         _searchBox?.Focus(FocusState.Programmatic);
-        _searchBox?.SelectAll();
+        // _searchBox?.SelectAll(); // Not available in WinUI 3 AutoSuggestBox
 
         AnimateOpen();
         Opened?.Invoke(this, EventArgs.Empty);
@@ -280,7 +289,7 @@ public sealed class LauncherWindow : Control
         overlayAnimation.InsertKeyFrame(0f, 0f);
         overlayAnimation.InsertKeyFrame(1f, 0.8f);
         overlayAnimation.Duration = TimeSpan.FromMilliseconds(150);
-        overlayAnimation.EasingFunction = _compositor.CreateCubicEase();
+        // overlayAnimation.EasingFunction = _compositor.CreateCubicEase(); // API not available in current WinUI 3
         _overlayVisual.StartAnimation("Opacity", overlayAnimation);
 
         // Animate panel slide down + fade in
@@ -292,7 +301,7 @@ public sealed class LauncherWindow : Control
         offsetAnimation.InsertKeyFrame(0f, new Vector3(0, -50, 0));
         offsetAnimation.InsertKeyFrame(1f, Vector3.Zero);
         offsetAnimation.Duration = TimeSpan.FromMilliseconds(200);
-        offsetAnimation.EasingFunction = _compositor.CreateCubicEase();
+        // offsetAnimation.EasingFunction = _compositor.CreateCubicEase(); // API not available in current WinUI 3
         panelVisual.StartAnimation("Offset", offsetAnimation);
 
         var opacityAnimation = _compositor.CreateScalarKeyFrameAnimation();
@@ -322,7 +331,7 @@ public sealed class LauncherWindow : Control
         offsetAnimation.InsertKeyFrame(0f, panelVisual.Offset);
         offsetAnimation.InsertKeyFrame(1f, new Vector3(0, -50, 0));
         offsetAnimation.Duration = TimeSpan.FromMilliseconds(150);
-        offsetAnimation.EasingFunction = _compositor.CreateCubicEase();
+        // offsetAnimation.EasingFunction = _compositor.CreateCubicEase(); // API not available in current WinUI 3
         panelVisual.StartAnimation("Offset", offsetAnimation);
 
         var opacityAnimation = _compositor.CreateScalarKeyFrameAnimation();
@@ -343,7 +352,9 @@ public sealed class LauncherWindow : Control
 
     private async void OnSearchTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
     {
-        if (args.Reason == AutoSuggestBoxTextChangeReason.UserInput)
+        // AutoSuggestBoxTextChangeReason enum not available in current WinUI 3
+        // Check via string comparison on the Reason property
+        if (args.Reason.ToString() == "UserInput")
         {
             await PerformSearchAsync(sender.Text);
         }

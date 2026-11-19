@@ -53,7 +53,7 @@ public sealed class WeatherWidget : IWidget
             var savedSettings = await _context.SettingsService.GetSettingsAsync(Manifest.Id);
             if (savedSettings != null)
             {
-                _settings = savedSettings.Data.Deserialize<WeatherSettings>() ?? new WeatherSettings();
+                _settings = JsonSerializer.Deserialize<WeatherSettings>(savedSettings.Data) ?? new WeatherSettings();
             }
         }
 
@@ -72,7 +72,7 @@ public sealed class WeatherWidget : IWidget
         _logger.LogInformation("Weather widget initialized");
     }
 
-    public FrameworkElement GetView()
+    public object GetView()
     {
         return _view ?? new WeatherWidgetView(this);
     }

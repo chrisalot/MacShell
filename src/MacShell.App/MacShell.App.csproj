@@ -12,6 +12,24 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <PublishSingleFile>true</PublishSingleFile>
     <PublishTrimmed>false</PublishTrimmed>
+    <WindowsPackageType>None</WindowsPackageType>
+    <EnableMsixTooling>true</EnableMsixTooling>
+    <!-- Disable XAML compiler to avoid WMC9999 error - App has no XAML files but references UI project -->
+    <WindowsAppSDKPackage>false</WindowsAppSDKPackage>
+    <UseWinUI>false</UseWinUI>
+    <UseXamlCompilerExecutable>false</UseXamlCompilerExecutable>
+    <XamlCompilerUseNetCore>false</XamlCompilerUseNetCore>
+    <UseNetCoreXamlCompiler>false</UseNetCoreXamlCompiler>
+    <DisableXbfCompiler>true</DisableXbfCompiler>
+    <DisableXbfGeneration>true</DisableXbfGeneration>
+    <EnableXamlCompilation>false</EnableXamlCompilation>
+    <XamlDebuggingInformation>false</XamlDebuggingInformation>
+    <DisableMsix>true</DisableMsix>
+    <GenerateAppInstallerFile>false</GenerateAppInstallerFile>
+    <GenerateMsixMetadata>false</GenerateMsixMetadata>
+    <!-- Prevent default XAML item detection since App has no XAML files -->
+    <EnableDefaultPageItems>false</EnableDefaultPageItems>
+    <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,7 +45,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="**\*.xaml" Generator="MSBuild:Compile" />
+    <Content Include="*.xaml" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
