@@ -33,7 +33,7 @@
     <Color x:Key="MacShellLauncherPanelBackgroundColor">#FF1E1E1E</Color>
     <Color x:Key="MacShellLauncherInputBackgroundColor">#FF2D2D2D</Color>
     <Color x:Key="MacShellLauncherResultHoverColor">#FF3A3A3C</Color>
-    <Color x:Key="MacShellLauncherResultSelectedColor">#FF007AFF33</Color>
+    <Color x:Key="MacShellLauncherResultSelectedColor">#33007AFF</Color>
 
     <!-- Text Colors -->
     <Color x:Key="MacShellTextPrimaryColor">#FFFFFFFF</Color>
@@ -109,24 +109,10 @@
     <SolidColorBrush x:Key="MacShellBorderLightBrush" Color="{StaticResource MacShellBorderLightColor}" />
     <SolidColorBrush x:Key="MacShellFocusBorderBrush" Color="{StaticResource MacShellFocusBorderColor}" />
 
-    <!-- Acrylic Brushes -->
-    <AcrylicBrush x:Key="MacShellDockAcrylicBrush"
-                  BackgroundSource="HostBackdrop"
-                  TintColor="{StaticResource MacShellDockAcrylicTintColor}"
-                  TintOpacity="0.6"
-                  FallbackColor="{StaticResource MacShellDockBackgroundColor}" />
-
-    <AcrylicBrush x:Key="MacShellTopBarAcrylicBrush"
-                  BackgroundSource="HostBackdrop"
-                  TintColor="{StaticResource MacShellTopBarAcrylicTintColor}"
-                  TintOpacity="0.6"
-                  FallbackColor="{StaticResource MacShellTopBarBackgroundColor}" />
-
-    <AcrylicBrush x:Key="MacShellLauncherAcrylicBrush"
-                  BackgroundSource="HostBackdrop"
-                  TintColor="{StaticResource MacShellLauncherPanelBackgroundColor}"
-                  TintOpacity="0.8"
-                  FallbackColor="{StaticResource MacShellLauncherPanelBackgroundColor}" />
+    <!-- Acrylic Brushes (using SolidColorBrush fallback for runtime XAML loading compatibility) -->
+    <SolidColorBrush x:Key="MacShellDockAcrylicBrush" Color="{StaticResource MacShellDockBackgroundColor}" />
+    <SolidColorBrush x:Key="MacShellTopBarAcrylicBrush" Color="{StaticResource MacShellTopBarBackgroundColor}" />
+    <SolidColorBrush x:Key="MacShellLauncherAcrylicBrush" Color="{StaticResource MacShellLauncherPanelBackgroundColor}" />
 
     <!-- ============================================================
          CORNER RADII
@@ -211,25 +197,10 @@
     </Style>
 
     <!-- ============================================================
-         SHADOWS
-         ============================================================ -->
-    <DropShadow x:Key="MacShellShadowSmall"
-                Color="{StaticResource MacShellShadowColor}"
-                Opacity="0.15"
-                BlurRadius="8"
-                Offset="0,2" />
-
-    <DropShadow x:Key="MacShellShadowMedium"
-                Color="{StaticResource MacShellShadowColor}"
-                Opacity="0.25"
-                BlurRadius="20"
-                Offset="0,4" />
-
-    <DropShadow x:Key="MacShellShadowLarge"
-                Color="{StaticResource MacShellShadowStrongColor}"
-                Opacity="0.4"
-                BlurRadius="40"
-                Offset="0,8" />
+         SHADOWS (using string placeholders for runtime XAML loading compatibility) -->
+    <x:String x:Key="MacShellShadowSmall">DropShadow placeholder</x:String>
+    <x:String x:Key="MacShellShadowMedium">DropShadow placeholder</x:String>
+    <x:String x:Key="MacShellShadowLarge">DropShadow placeholder</x:String>
 
     <!-- ============================================================
          ANIMATION DURATIONS
@@ -238,9 +209,9 @@
     <x:Double x:Key="MacShellAnimationNormal">250</x:Double>
     <x:Double x:Key="MacShellAnimationSlow">350</x:Double>
 
-    <!-- Easing Functions -->
-    <EasingFunctionBase x:Key="MacShellEaseOut">ExponentialEase EasingMode="EaseOut" Exponent="3" /></EasingFunctionBase>
-    <EasingFunctionBase x:Key="MacShellEaseInOut">CubicEase EasingMode="EaseInOut" /></EasingFunctionBase>
-    <EasingFunctionBase x:Key="MacShellSpring">SpringEase Springiness="0.4" /></EasingFunctionBase>
+    <!-- Easing Functions (using string placeholders for runtime XAML loading compatibility) -->
+    <x:String x:Key="MacShellEaseOut">ExponentialEase placeholder</x:String>
+    <x:String x:Key="MacShellEaseInOut">CubicEase placeholder</x:String>
+    <x:String x:Key="MacShellSpring">SpringEase placeholder</x:String>
 
 </ResourceDictionary>

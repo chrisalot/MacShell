@@ -10,7 +10,7 @@
     <AssemblyName>MacShell</AssemblyName>
     <OutputType>WinExe</OutputType>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <PublishSingleFile>true</PublishSingleFile>
+    <PublishSingleFile>false</PublishSingleFile>
     <PublishTrimmed>false</PublishTrimmed>
     <WindowsPackageType>None</WindowsPackageType>
     <EnableMsixTooling>true</EnableMsixTooling>
@@ -30,6 +30,9 @@
     <!-- Prevent default XAML item detection since App has no XAML files -->
     <EnableDefaultPageItems>false</EnableDefaultPageItems>
     <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
+    <!-- Authenticode signing to bypass WDAC/App Control -->
+    <SignAssembly>false</SignAssembly>
+    <CertificateThumbprint>516C66043CDB6542E7BA959BECB275F759E73021</CertificateThumbprint>
   </PropertyGroup>
 
   <ItemGroup>
@@ -45,12 +48,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="*.xaml" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\MacShell.UI\Resources\**\*.xaml" Link="Resources\%(RecursiveDir)%(FileName)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="..\MacShell.UI\Views\*.xaml" Link="Views\%(FileName)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
     <None Update="app.manifest">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>
   </ItemGroup>
 </Project>

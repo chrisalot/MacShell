@@ -1,10 +1,12 @@
 using System;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Markup;
+using Microsoft.UI.Xaml.Media;
+using WinRT.Interop;
 using MacShell.Core.Interfaces;
 using MacShell.Core.Services;
-using MacShell.UI.Helpers;
+using MacShell.UI.Views;
 
 namespace MacShell.UI.Views;
 
@@ -20,11 +22,6 @@ public sealed class SettingsWindow : Window
 
     private NavigationView? _navView;
     private Frame? _contentFrame;
-    private NavigationViewItem? _navGeneral;
-    private NavigationViewItem? _navDock;
-    private NavigationViewItem? _navAppearance;
-    private NavigationViewItem? _navWidgets;
-    private NavigationViewItem? _navAbout;
 
     public SettingsWindow(
         DockManager dockManager,
@@ -37,44 +34,108 @@ public sealed class SettingsWindow : Window
         _systemService = systemService;
         _windowManager = windowManager;
 
-        LoadXaml();
+        CreateUIProgrammatically();
         SetupEventHandlers();
+
+        // Configure window size after window is created
+        ConfigureWindowSize();
 
         // Navigate to General by default
         NavigateToPage("General");
-        _navView!.SelectedItem = _navGeneral;
+        _navView!.SelectedItem = _navView.MenuItems[0];
     }
 
-    private void LoadXaml()
+    private void CreateUIProgrammatically()
     {
-        // Load XAML from file at runtime
-        var assembly = System.Reflection.Assembly.GetExecutingAssembly();
-        var assemblyDir = System.IO.Path.GetDirectoryName(assembly.Location) ?? "";
-        var xamlPath = System.IO.Path.Combine(assemblyDir, "Views", "SettingsWindow.xaml");
+        this.Title = "MacShell Settings";
 
-        if (!System.IO.File.Exists(xamlPath))
+        // Create root grid with background
+        var rootGrid = new Grid
         {
-            throw new System.IO.FileNotFoundException($"SettingsWindow.xaml not found at {xamlPath}");
-        }
+            Background = (Brush)Application.Current.Resources["MacShellBackgroundBrush"]
+        };
 
-        var xamlContent = System.IO.File.ReadAllText(xamlPath);
-        var window = (Window)XamlReader.Load(xamlContent);
-
-        // Copy properties from loaded window to this instance
-        // Note: WinUI 3 Window doesn't have Width, Height, MinWidth, MinHeight - those are on the root element
-        this.Title = window.Title;
-        this.Content = window.Content;
-
-        // Find named elements from the loaded content
-        if (this.Content is FrameworkElement root)
+        // Create NavigationView
+        _navView = new NavigationView
         {
-            _navView = root.FindName("NavView") as NavigationView;
-            _contentFrame = root.FindName("ContentFrame") as Frame;
-            _navGeneral = root.FindName("NavGeneral") as NavigationViewItem;
-            _navDock = root.FindName("NavDock") as NavigationViewItem;
-            _navAppearance = root.FindName("NavAppearance") as NavigationViewItem;
-            _navWidgets = root.FindName("NavWidgets") as NavigationViewItem;
-            _navAbout = root.FindName("NavAbout") as NavigationViewItem;
+            Name = "NavView",
+            Style = (Style)Application.Current.Resources["MacShellSettingsNavViewStyle"],
+            PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
+            IsSettingsVisible = false
+        };
+
+        // Create navigation menu items
+        var navGeneral = new NavigationViewItem
+        {
+            Name = "NavGeneral",
+            Content = "General",
+            Icon = new FontIcon { Glyph = "" },
+            Tag = "General"
+        };
+        var navDock = new NavigationViewItem
+        {
+            Name = "NavDock",
+            Content = "Dock",
+            Icon = new FontIcon { Glyph = "" },
+            Tag = "Dock"
+        };
+        var navAppearance = new NavigationViewItem
+        {
+            Name = "NavAppearance",
+            Content = "Appearance",
+            Icon = new FontIcon { Glyph = "" },
+            Tag = "Appearance"
+        };
+        var navWidgets = new NavigationViewItem
+        {
+            Name = "NavWidgets",
+            Content = "Widgets",
+            Icon = new FontIcon { Glyph = "" },
+            Tag = "Widgets"
+        };
+        var navAbout = new NavigationViewItem
+        {
+            Name = "NavAbout",
+            Content = "About",
+            Icon = new FontIcon { Glyph = "" },
+            Tag = "About"
+        };
+
+        _navView.MenuItems.Add(navGeneral);
+        _navView.MenuItems.Add(navDock);
+        _navView.MenuItems.Add(navAppearance);
+        _navView.MenuItems.Add(navWidgets);
+        _navView.MenuItems.Add(navAbout);
+
+        // Create content frame
+        _contentFrame = new Frame
+        {
+            Name = "ContentFrame",
+            Background = new SolidColorBrush(Microsoft.UI.Colors.Transparent)
+        };
+        _navView.Content = _contentFrame;
+
+        // Set window content
+        rootGrid.Children.Add(_navView);
+        this.Content = rootGrid;
+    }
+
+    private void ConfigureWindowSize()
+    {
+        var hwnd = WindowNative.GetWindowHandle(this);
+        var windowIdPtr = Win32Interop.GetWindowIdFromWindow(hwnd);
+        var windowId = new Microsoft.UI.WindowId((ulong)windowIdPtr);
+        var appWindow = AppWindow.GetFromWindowId(windowId);
+        if (appWindow != null)
+        {
+            var presenter = appWindow.Presenter as OverlappedPresenter;
+            if (presenter != null)
+            {
+                presenter.IsResizable = true;
+                presenter.IsMaximizable = true;
+                presenter.IsMinimizable = true;
+            }
+            appWindow.Resize(new Windows.Graphics.SizeInt32(640, 520));
         }
     }
 
@@ -136,4 +197,10 @@ internal sealed class SettingsContext
     public required IAppLauncher AppLauncher { get; init; }
     public required ISystemService SystemService { get; init; }
     public required IWindowManager WindowManager { get; init; }
+}
+
+internal static class Win32Interop
+{
+    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    public static extern IntPtr GetWindowIdFromWindow(IntPtr hWnd);
 }

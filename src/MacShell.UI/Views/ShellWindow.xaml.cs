@@ -10,6 +10,7 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Markup;
 using Windows.System;
 using Windows.UI.Input;
@@ -18,6 +19,7 @@ using MacShell.Core.Interfaces;
 using MacShell.Core.Models;
 using MacShell.Core.Services;
 using MacShell.UI.Controls;
+using MacShell.UI.Converters;
 using MacShell.UI.Helpers;
 
 namespace MacShell.UI.Views;
@@ -93,37 +95,105 @@ public sealed class ShellWindow : Window
 
     private void LoadXaml()
     {
-        var assembly = Assembly.GetExecutingAssembly();
-        var assemblyDir = Path.GetDirectoryName(assembly.Location) ?? "";
-        var xamlPath = Path.Combine(assemblyDir, "Views", "ShellWindow.xaml");
+        // Create UI entirely in code - avoids all XamlReader.Load() issues with WinUI 3
+        CreateUIProgrammatically();
+    }
 
-        if (!File.Exists(xamlPath))
+    private void CreateUIProgrammatically()
+    {
+        // Create converters
+        var boolToVisConverter = new BoolToVisibilityConverter();
+        var runningToIndicatorConverter = new RunningStateToIndicatorConverter();
+        var dockItemToIconConverter = new DockItemToIconConverter();
+        var dockItemToNameConverter = new DockItemToNameConverter();
+
+        // Create root grid
+        _rootGrid = new Grid
         {
-            throw new FileNotFoundException($"ShellWindow.xaml not found at {xamlPath}");
-        }
+            Name = "RootGrid",
+            Background = (Brush)Application.Current.Resources["MacShellBackgroundBrush"]
+        };
 
-        var xamlContent = File.ReadAllText(xamlPath);
-        var window = (Window)XamlReader.Load(xamlContent);
-
-        // Copy content from loaded window to this instance
-        // Note: WinUI 3 Window doesn't have Background, Width, Height, etc. - those are on the root element
-        this.Content = window.Content;
-
-        // Find named elements from the loaded content
-        if (this.Content is FrameworkElement root)
+        // Content area (click-through for desktop interaction)
+        _contentArea = new Grid
         {
-            _rootGrid = root.FindName("RootGrid") as Grid;
-            _contentArea = root.FindName("ContentArea") as Grid;
-            _topBar = root.FindName("TopBar") as TopBar;
-            _desktopArea = root.FindName("DesktopArea") as Grid;
-            _dockPanel = root.FindName("DockPanel") as DockPanel;
-            _launcherWindow = root.FindName("LauncherWindow") as LauncherWindow;
-            _settingsButton = root.FindName("SettingsButton") as Button;
+            Name = "ContentArea",
+            IsHitTestVisible = false
+        };
 
-            // Subscribe to events on root element (Window doesn't have Loaded/Unloaded in WinUI 3)
-            root.Loaded += OnLoaded;
-            root.Unloaded += OnUnloaded;
-        }
+        // Top Bar
+        _topBar = new TopBar
+        {
+            Name = "TopBar",
+            VerticalAlignment = VerticalAlignment.Top,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            Height = 28,
+            SystemService = SystemService,
+            TimeFormat = "HH:mm",
+            ShowSeconds = false,
+            IsHitTestVisible = true
+        };
+
+        // Desktop area (center)
+        _desktopArea = new Grid
+        {
+            Name = "DesktopArea",
+            VerticalAlignment = VerticalAlignment.Stretch,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            Margin = new Thickness(0, 28, 0, 80) // Top bar height + dock height
+        };
+
+        // Dock Panel
+        _dockPanel = new DockPanel
+        {
+            Name = "DockPanel",
+            VerticalAlignment = VerticalAlignment.Bottom,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            Height = 72,
+            Margin = new Thickness(0, 0, 0, 8),
+            IsHitTestVisible = true
+        };
+
+        // Launcher Window
+        _launcherWindow = new LauncherWindow
+        {
+            Name = "LauncherWindow",
+            AppLauncher = AppLauncher,
+            IsOpen = false
+        };
+
+        // Settings Button (in top bar or dock)
+        _settingsButton = new Button
+        {
+            Name = "SettingsButton",
+            Content = "", // Settings gear icon
+            Style = (Style)Application.Current.Resources["MacShellIconButtonStyle"],
+            Width = 36,
+            Height = 36,
+            VerticalAlignment = VerticalAlignment.Top,
+            HorizontalAlignment = HorizontalAlignment.Right,
+            Margin = new Thickness(0, 28, 16, 0),
+            IsHitTestVisible = true
+        };
+        ToolTipService.SetToolTip(_settingsButton, "Settings (Win+,)");
+
+        // Build visual tree
+        _contentArea.Children.Add(_topBar);
+        _contentArea.Children.Add(_desktopArea);
+        _contentArea.Children.Add(_dockPanel);
+        _contentArea.Children.Add(_launcherWindow);
+        _contentArea.Children.Add(_settingsButton);
+
+        _rootGrid.Children.Add(_contentArea);
+
+        this.Content = _rootGrid;
+
+        // Subscribe to events
+        _rootGrid.Loaded += OnLoaded;
+        _rootGrid.Unloaded += OnUnloaded;
+
+        SetupBindings();
+        SetupEventHandlers();
     }
 
     private void SetupBindings()

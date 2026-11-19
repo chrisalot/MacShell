@@ -18,4 +18,23 @@
     <PackageReference Include="Microsoft.Win32.SystemEvents" Version="9.0.0" />
     <PackageReference Include="Microsoft.Windows.Compatibility" Version="6.0.0" />
   </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Windows.Markup.XmlnsDefinition">
+      <_Parameter1>using:MacShell.Core.Models</_Parameter1>
+      <_Parameter2>MacShell.Core.Models</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Windows.Markup.XmlnsDefinition">
+      <_Parameter1>using:MacShell.Core.Interfaces</_Parameter1>
+      <_Parameter2>MacShell.Core.Interfaces</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Windows.Markup.XmlnsPrefix">
+      <_Parameter1>using:MacShell.Core.Models</_Parameter1>
+      <_Parameter2>core</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Windows.Markup.XmlnsPrefix">
+      <_Parameter1>using:MacShell.Core.Interfaces</_Parameter1>
+      <_Parameter2>coreInterfaces</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
 </Project>

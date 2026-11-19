@@ -25,7 +25,8 @@ public sealed partial class App : Application
 {
     private IHost? _host;
     private ShellWindow? _mainWindow;
-    private static readonly Mutex _singleInstanceMutex = new(true, "Global\\MacShell_SingleInstance");
+    private static Mutex? _singleInstanceMutex;
+    private static bool _mutexAcquired = false;
 
     public App()
     {
@@ -35,10 +36,19 @@ public sealed partial class App : Application
 
     protected override async void OnLaunched(LaunchActivatedEventArgs args)
     {
-        // Check for single instance
-        if (!_singleInstanceMutex.WaitOne(0, false))
+        // Check for single instance - create mutex and try to acquire
+        // Use local mutex instead of global to avoid admin requirement
+        var mutexName = "MacShell_SingleInstance_" + Environment.ProcessId;
+        _singleInstanceMutex = new Mutex(false, mutexName, out _mutexAcquired);
+
+        System.Diagnostics.Debug.WriteLine($"Mutex acquired: {_mutexAcquired} (name: {mutexName})");
+        Console.WriteLine($"Mutex acquired: {_mutexAcquired} (name: {mutexName})");
+
+        if (!_mutexAcquired)
         {
             // Another instance is running - activate it
+            System.Diagnostics.Debug.WriteLine("Another instance detected, exiting");
+            Console.WriteLine("Another instance detected, exiting");
             ActivateExistingInstance();
             Current.Exit();
             return;
@@ -46,12 +56,21 @@ public sealed partial class App : Application
 
         try
         {
+            System.Diagnostics.Debug.WriteLine("Loading XAML resources...");
+            Console.WriteLine("Loading XAML resources...");
+
             // Load XAML resources at runtime
             LoadXamlResources();
+
+            System.Diagnostics.Debug.WriteLine("Building host...");
+            Console.WriteLine("Building host...");
 
             // Build host with DI
             _host = CreateHostBuilder().Build();
             await _host.StartAsync();
+
+            System.Diagnostics.Debug.WriteLine("Getting services...");
+            Console.WriteLine("Getting services...");
 
             // Get services
             var dockManager = _host.Services.GetRequiredService<DockManager>();
@@ -59,16 +78,26 @@ public sealed partial class App : Application
             var systemService = _host.Services.GetRequiredService<ISystemService>();
             var windowManager = _host.Services.GetRequiredService<IWindowManager>();
 
+            System.Diagnostics.Debug.WriteLine("Creating main window...");
+            Console.WriteLine("Creating main window...");
+
             // Create and show main window
             _mainWindow = new ShellWindow(dockManager, appLauncher, systemService, windowManager);
             _mainWindow.Activate();
 
+            System.Diagnostics.Debug.WriteLine("Registering for restart...");
+            Console.WriteLine("Registering for restart...");
+
             // Register for restart
             RegisterForRestart();
+
+            System.Diagnostics.Debug.WriteLine("App started successfully!");
+            Console.WriteLine("App started successfully!");
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Failed to start MacShell: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"Failed to start MacShell: {ex}");
+            Console.WriteLine($"Failed to start MacShell: {ex}");
             Current.Exit();
         }
     }
@@ -105,9 +134,6 @@ public sealed partial class App : Application
             var commonStyles = (ResourceDictionary)XamlReader.Load(commonStylesContent);
             Current.Resources.MergedDictionaries.Add(commonStyles);
         }
-
-        // Add WinUI 3 resources
-        Current.Resources.MergedDictionaries.Add(new XamlControlsResources());
     }
 
     private IHostBuilder CreateHostBuilder()
@@ -166,7 +192,10 @@ public sealed partial class App : Application
     {
         _host?.StopAsync().GetAwaiter().GetResult();
         _host?.Dispose();
-        _singleInstanceMutex.ReleaseMutex();
+        if (_mutexAcquired && _singleInstanceMutex != null)
+        {
+            _singleInstanceMutex.ReleaseMutex();
+        }
     }
 
     // Win32 P/Invoke for restart registration

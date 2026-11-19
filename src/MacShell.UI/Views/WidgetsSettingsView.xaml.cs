@@ -1,12 +1,9 @@
+using System;
 using System.Collections.ObjectModel;
-using System.IO;
-using System.Reflection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Markup;
-using Microsoft.UI.Xaml.Navigation;
 using CommunityToolkit.Mvvm.ComponentModel;
-using MacShell.Core.Models;
 
 namespace MacShell.UI.Views;
 
@@ -21,29 +18,24 @@ public sealed partial class WidgetsSettingsViewModel : ObservableObject
     [ObservableProperty]
     private bool _showErrors = true;
 
-    [ObservableProperty]
-    private ObservableCollection<WidgetInfo> _builtInWidgets = new();
+    public ObservableCollection<WidgetInfo> BuiltInWidgets { get; } = new()
+    {
+        new WidgetInfo { Name = "Clock", Description = "Shows current time and date" },
+        new WidgetInfo { Name = "System Monitor", Description = "CPU, memory, and network usage" },
+        new WidgetInfo { Name = "Weather", Description = "Current weather and forecast" }
+    };
 
-    [ObservableProperty]
-    private ObservableCollection<WidgetInfo> _userWidgets = new();
+    public ObservableCollection<WidgetInfo> UserWidgets { get; } = new();
 }
 
 /// <summary>
-/// Widget info for display in settings.
+/// Widget info for display.
 /// </summary>
-public sealed partial class WidgetInfo : ObservableObject
+public sealed class WidgetInfo
 {
-    [ObservableProperty]
-    private string _name = "";
-
-    [ObservableProperty]
-    private string _description = "";
-
-    [ObservableProperty]
-    private string _path = "";
-
-    [ObservableProperty]
-    private bool _isEnabled = true;
+    public required string Name { get; init; }
+    public required string Description { get; init; }
+    public string? Path { get; init; }
 }
 
 /// <summary>
@@ -53,192 +45,204 @@ public sealed class WidgetsSettingsView : Page
 {
     public WidgetsSettingsViewModel ViewModel { get; } = new();
 
-    private ListView? _builtInWidgetsList;
-    private ListView? _userWidgetsList;
-    private Button? _addWidgetButton;
-    private Button? _openUserWidgetsFolderButton;
-    private Button? _configureWidgetButton;
-    private Button? _removeWidgetButton;
-    private ToggleSwitch? _autoReloadToggle;
-    private ToggleSwitch? _showErrorsToggle;
-
     public WidgetsSettingsView()
     {
-        LoadXaml();
-        SetupEventHandlers();
+        this.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Transparent);
+        CreateUIProgrammatically();
         DataContext = ViewModel;
     }
 
-    private void LoadXaml()
+    private void CreateUIProgrammatically()
     {
-        var assembly = Assembly.GetExecutingAssembly();
-        var assemblyDir = Path.GetDirectoryName(assembly.Location) ?? "";
-        var xamlPath = Path.Combine(assemblyDir, "Views", "WidgetsSettingsView.xaml");
-
-        if (!File.Exists(xamlPath))
+        var scrollViewer = new ScrollViewer
         {
-            throw new FileNotFoundException($"WidgetsSettingsView.xaml not found at {xamlPath}");
-        }
+            Padding = new Thickness(24),
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto
+        };
 
-        var xamlContent = File.ReadAllText(xamlPath);
-        var page = (Page)XamlReader.Load(xamlContent);
-
-        // Copy properties
-        this.Background = page.Background;
-        this.Content = page.Content;
-
-        // Find named elements
-        _builtInWidgetsList = FindName("BuiltInWidgetsList") as ListView;
-        _userWidgetsList = FindName("UserWidgetsList") as ListView;
-        _addWidgetButton = FindName("AddWidgetButton") as Button;
-        _openUserWidgetsFolderButton = FindName("OpenUserWidgetsFolderButton") as Button;
-        _configureWidgetButton = FindName("ConfigureWidgetButton") as Button;
-        _removeWidgetButton = FindName("RemoveWidgetButton") as Button;
-        _autoReloadToggle = FindName("AutoReloadToggle") as ToggleSwitch;
-        _showErrorsToggle = FindName("ShowErrorsToggle") as ToggleSwitch;
-
-        // Bind toggles to ViewModel
-        if (_autoReloadToggle != null)
-            _autoReloadToggle.IsOn = ViewModel.AutoReload;
-        if (_showErrorsToggle != null)
-            _showErrorsToggle.IsOn = ViewModel.ShowErrors;
-    }
-
-    private void SetupEventHandlers()
-    {
-        if (_addWidgetButton != null)
-            _addWidgetButton.Click += OnAddWidget;
-        if (_openUserWidgetsFolderButton != null)
-            _openUserWidgetsFolderButton.Click += OnOpenUserWidgetsFolder;
-        if (_configureWidgetButton != null)
-            _configureWidgetButton.Click += OnConfigureWidget;
-        if (_removeWidgetButton != null)
-            _removeWidgetButton.Click += OnRemoveWidget;
-        if (_builtInWidgetsList != null)
-            _builtInWidgetsList.ItemClick += OnWidgetItemClick;
-        if (_userWidgetsList != null)
-            _userWidgetsList.ItemClick += OnUserWidgetItemClick;
-        if (_autoReloadToggle != null)
-            _autoReloadToggle.Toggled += (s, e) => ViewModel.AutoReload = _autoReloadToggle.IsOn;
-        if (_showErrorsToggle != null)
-            _showErrorsToggle.Toggled += (s, e) => ViewModel.ShowErrors = _showErrorsToggle.IsOn;
-    }
-
-    protected override void OnNavigatedTo(NavigationEventArgs e)
-    {
-        base.OnNavigatedTo(e);
-        if (e.Parameter is SettingsContext context)
+        var mainStack = new StackPanel
         {
-            LoadWidgets();
-        }
-    }
+            Spacing = 24,
+            MaxWidth = 560
+        };
 
-    private void LoadWidgets()
-    {
-        // Load built-in widgets
-        ViewModel.BuiltInWidgets.Clear();
-        ViewModel.BuiltInWidgets.Add(new WidgetInfo
+        // Header
+        var headerStack = new StackPanel { Spacing = 8 };
+        headerStack.Children.Add(new TextBlock
         {
-            Name = "Clock",
-            Description = "Shows current time and date",
-            Path = "Built-in"
+            Text = "Widgets",
+            Style = (Style)Application.Current.Resources["MacShellTextStyleDisplay"]
         });
-        ViewModel.BuiltInWidgets.Add(new WidgetInfo
+        headerStack.Children.Add(new TextBlock
         {
-            Name = "System Monitor",
-            Description = "CPU, memory, and network usage",
-            Path = "Built-in"
+            Text = "Manage and configure widgets",
+            Style = (Style)Application.Current.Resources["MacShellTextStyleBodySecondary"]
         });
-        ViewModel.BuiltInWidgets.Add(new WidgetInfo
+        mainStack.Children.Add(headerStack);
+
+        // Built-in Widgets
+        var builtInCard = new Border
         {
-            Name = "Weather",
-            Description = "Current weather conditions",
-            Path = "Built-in"
+            Style = (Style)Application.Current.Resources["MacShellCardStyle"]
+        };
+        var builtInStack = new StackPanel { Spacing = 16 };
+        var builtInHeader = new Grid { ColumnDefinitions = { new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, new ColumnDefinition { Width = GridLength.Auto } } };
+        var builtInTitle = new TextBlock
+        {
+            Text = "Built-in Widgets",
+            Style = (Style)Application.Current.Resources["MacShellTextStyleTitle"]
+        };
+        builtInHeader.Children.Add(builtInTitle);
+        Grid.SetColumn(builtInTitle, 0);
+
+        var addWidgetButton = new Button
+        {
+            Style = (Style)Application.Current.Resources["MacShellAccentButtonStyle"],
+            Content = "Add Widget"
+        };
+        builtInHeader.Children.Add(addWidgetButton);
+        Grid.SetColumn(addWidgetButton, 1);
+        builtInStack.Children.Add(builtInHeader);
+
+        var builtInList = new ListView
+        {
+            SelectionMode = ListViewSelectionMode.None,
+            IsItemClickEnabled = true,
+            ItemsSource = ViewModel.BuiltInWidgets
+        };
+        builtInList.ItemTemplate = (DataTemplate)XamlReader.Load(
+            "<DataTemplate xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\" " +
+            "xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\">" +
+            "<Border Style=\"{StaticResource MacShellCardStyle}\" Padding=\"12\" Margin=\"0,4\">" +
+            "<StackPanel Orientation=\"Horizontal\" Spacing=\"16\">" +
+            "<FontIcon Glyph=\"&#xE8AF;\" FontSize=\"24\" VerticalAlignment=\"Center\" Foreground=\"{ThemeResource MacShellAccentBrush}\" />" +
+            "<StackPanel Spacing=\"4\" VerticalAlignment=\"Center\">" +
+            "<TextBlock Text=\"{Binding Name}\" Style=\"{StaticResource MacShellTextStyleBody}\" />" +
+            "<TextBlock Text=\"{Binding Description}\" Style=\"{StaticResource MacShellTextStyleCaption}\" />" +
+            "</StackPanel>" +
+            "</StackPanel>" +
+            "</Border>" +
+            "</DataTemplate>");
+        builtInStack.Children.Add(builtInList);
+        builtInCard.Child = builtInStack;
+        mainStack.Children.Add(builtInCard);
+
+        // User Widgets
+        var userCard = new Border
+        {
+            Style = (Style)Application.Current.Resources["MacShellCardStyle"]
+        };
+        var userStack = new StackPanel { Spacing = 16 };
+        var userHeader = new Grid { ColumnDefinitions = { new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, new ColumnDefinition { Width = GridLength.Auto } } };
+        var userTitle = new TextBlock
+        {
+            Text = "User Widgets",
+            Style = (Style)Application.Current.Resources["MacShellTextStyleTitle"]
+        };
+        userHeader.Children.Add(userTitle);
+        Grid.SetColumn(userTitle, 0);
+
+        var openFolderButton = new Button
+        {
+            Style = (Style)Application.Current.Resources["MacShellButtonStyle"],
+            Content = "Open Folder"
+        };
+        userHeader.Children.Add(openFolderButton);
+        Grid.SetColumn(openFolderButton, 1);
+        userStack.Children.Add(userHeader);
+
+        userStack.Children.Add(new TextBlock
+        {
+            Text = "Place your custom widget folders in the UserWidgets directory. Each widget should contain a widget.json manifest and compiled DLL.",
+            Style = (Style)Application.Current.Resources["MacShellTextStyleBodySecondary"],
+            TextWrapping = TextWrapping.Wrap
         });
 
-        // Load user widgets (scan folder)
-        LoadUserWidgets();
-    }
-
-    private void LoadUserWidgets()
-    {
-        ViewModel.UserWidgets.Clear();
-        var userWidgetsPath = GetUserWidgetsPath();
-        if (System.IO.Directory.Exists(userWidgetsPath))
+        var userList = new ListView
         {
-            foreach (var dir in System.IO.Directory.GetDirectories(userWidgetsPath))
-            {
-                var manifestPath = System.IO.Path.Combine(dir, "widget.json");
-                if (System.IO.File.Exists(manifestPath))
-                {
-                    try
-                    {
-                        var json = System.IO.File.ReadAllText(manifestPath);
-                        var manifest = MacShell.Core.Models.WidgetManifest.FromJson(json);
-                        ViewModel.UserWidgets.Add(new WidgetInfo
-                        {
-                            Name = manifest.Name,
-                            Description = manifest.Description,
-                            Path = dir
-                        });
-                    }
-                    catch { }
-                }
-            }
-        }
-    }
+            SelectionMode = ListViewSelectionMode.None,
+            IsItemClickEnabled = true,
+            ItemsSource = ViewModel.UserWidgets
+        };
+        userList.ItemTemplate = (DataTemplate)XamlReader.Load(
+            "<DataTemplate xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\" " +
+            "xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\">" +
+            "<Border Style=\"{StaticResource MacShellCardStyle}\" Padding=\"12\" Margin=\"0,4\">" +
+            "<StackPanel Orientation=\"Horizontal\" Spacing=\"16\">" +
+            "<FontIcon Glyph=\"&#xE7EE;\" FontSize=\"24\" VerticalAlignment=\"Center\" Foreground=\"{ThemeResource MacShellTextSecondaryBrush}\" />" +
+            "<StackPanel Spacing=\"4\" VerticalAlignment=\"Center\">" +
+            "<TextBlock Text=\"{Binding Name}\" Style=\"{StaticResource MacShellTextStyleBody}\" />" +
+            "<TextBlock Text=\"{Binding Path}\" Style=\"{StaticResource MacShellTextStyleCaption}\" />" +
+            "</StackPanel>" +
+            "<StackPanel Orientation=\"Horizontal\" Spacing=\"8\" HorizontalAlignment=\"Right\">" +
+            "<Button Style=\"{StaticResource MacShellIconButtonStyle}\" Content=\"&#xE713;\" />" +
+            "<Button Style=\"{StaticResource MacShellIconButtonStyle}\" Content=\"&#xE74D;\" />" +
+            "</StackPanel>" +
+            "</StackPanel>" +
+            "</Border>" +
+            "</DataTemplate>");
+        userStack.Children.Add(userList);
+        userCard.Child = userStack;
+        mainStack.Children.Add(userCard);
 
-    private static string GetUserWidgetsPath()
-    {
-        var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        return System.IO.Path.Combine(localAppData, "MacShell", "UserWidgets");
-    }
-
-    private void OnAddWidget(object sender, RoutedEventArgs e)
-    {
-        // Open user widgets folder
-        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+        // Widget Settings
+        var settingsCard = new Border
         {
-            FileName = GetUserWidgetsPath(),
-            UseShellExecute = true,
-            Verb = "open"
+            Style = (Style)Application.Current.Resources["MacShellCardStyle"]
+        };
+        var settingsStack = new StackPanel { Spacing = 16 };
+        settingsStack.Children.Add(new TextBlock
+        {
+            Text = "Widget Settings",
+            Style = (Style)Application.Current.Resources["MacShellTextStyleTitle"]
         });
+        var settingsInner = new StackPanel { Spacing = 12 };
+        settingsInner.Children.Add(CreateToggleRow("Auto-reload on Change", "Automatically reload widgets when files change",
+            ViewModel, nameof(ViewModel.AutoReload)));
+        settingsInner.Children.Add(CreateToggleRow("Show Widget Errors", "Display widget load errors in the dock",
+            ViewModel, nameof(ViewModel.ShowErrors)));
+        settingsStack.Children.Add(settingsInner);
+        settingsCard.Child = settingsStack;
+        mainStack.Children.Add(settingsCard);
+
+        scrollViewer.Content = mainStack;
+        this.Content = scrollViewer;
     }
 
-    private void OnOpenUserWidgetsFolder(object sender, RoutedEventArgs e)
+    private StackPanel CreateToggleRow(string title, string description, WidgetsSettingsViewModel vm, string propertyName)
     {
-        OnAddWidget(sender, e);
-    }
-
-    private void OnWidgetItemClick(object sender, ItemClickEventArgs e)
-    {
-        if (e.ClickedItem is WidgetInfo widget)
+        var row = new Grid { ColumnDefinitions = { new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, new ColumnDefinition { Width = GridLength.Auto } } };
+        var leftStack = new StackPanel { Spacing = 4 };
+        leftStack.Children.Add(new TextBlock
         {
-            // Show widget configuration
-        }
-    }
-
-    private void OnUserWidgetItemClick(object sender, ItemClickEventArgs e)
-    {
-        if (e.ClickedItem is WidgetInfo widget)
+            Text = title,
+            Style = (Style)Application.Current.Resources["MacShellTextStyleBody"]
+        });
+        leftStack.Children.Add(new TextBlock
         {
-            // Show user widget configuration
-        }
-    }
+            Text = description,
+            Style = (Style)Application.Current.Resources["MacShellTextStyleBodySecondary"]
+        });
+        row.Children.Add(leftStack);
+        Grid.SetColumn(leftStack, 0);
 
-    private void OnConfigureWidget(object sender, RoutedEventArgs e)
-    {
-        if (sender is Button btn && btn.Tag is WidgetInfo widget)
+        var toggle = new ToggleSwitch
         {
-            // Open widget configuration dialog
-        }
-    }
+            Style = (Style)Application.Current.Resources["MacShellToggleSwitchStyle"],
+            OnContent = "",
+            OffContent = ""
+        };
+        toggle.SetBinding(ToggleSwitch.IsOnProperty, new Microsoft.UI.Xaml.Data.Binding
+        {
+            Source = vm,
+            Path = new PropertyPath(propertyName),
+            Mode = Microsoft.UI.Xaml.Data.BindingMode.TwoWay
+        });
+        row.Children.Add(toggle);
+        Grid.SetColumn(toggle, 1);
 
-    private void OnRemoveWidget(object sender, RoutedEventArgs e)
-    {
-        if (sender is Button btn && btn.Tag is WidgetInfo widget)
-        {
-            // Remove widget (delete folder)
-        }
+        var wrapper = new StackPanel();
+        wrapper.Children.Add(row);
+        return wrapper;
     }
 }

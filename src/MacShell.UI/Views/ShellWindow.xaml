@@ -7,57 +7,52 @@
     xmlns:coreInterfaces="using:MacShell.Core.Interfaces"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d"
-    WindowStyle="None"
-    ExtendClientAreaIntoTitleBar="True"
-    ExtendClientAreaToDecorationsHint="True"
-    Background="{ThemeResource MacShellBackgroundBrush}">
+    mc:Ignorable="d">
 
-    <Window.Resources>
-        <converters:BoolToVisibilityConverter x:Key="BoolToVisConverter" />
-        <converters:RunningStateToIndicatorConverter x:Key="RunningToIndicatorConverter" />
-        <converters:DockItemToIconConverter x:Key="DockItemToIconConverter" />
-        <converters:DockItemToNameConverter x:Key="DockItemToNameConverter" />
+    <Grid x:Name="RootGrid" Background="{ThemeResource MacShellBackgroundBrush}">
+        <Grid.Resources>
+            <converters:BoolToVisibilityConverter x:Key="BoolToVisConverter" />
+            <converters:RunningStateToIndicatorConverter x:Key="RunningToIndicatorConverter" />
+            <converters:DockItemToIconConverter x:Key="DockItemToIconConverter" />
+            <converters:DockItemToNameConverter x:Key="DockItemToNameConverter" />
 
-        <!-- Dock Item Template -->
-        <DataTemplate x:Key="DockItemTemplate" x:DataType="core:DockItem">
-            <controls:DockItemControl
-                DataContext="{Binding}"
-                IconSource="{Binding IconPath, Converter={StaticResource DockItemToIconConverter}}"
-                IconSize="28"
-                IsRunning="{Binding IsRunning, Mode=OneWay}"
-                RunningIndicatorSize="8"
-                RunningIndicatorColor="{ThemeResource MacShellDockRunningIndicatorBrush}"
-                CornerRadius="8"
-                ToolTipTemplate="{StaticResource DockItemToolTipTemplate}"
-                Width="48"
-                Height="48" />
-        </DataTemplate>
+            <!-- Dock Item Template -->
+            <DataTemplate x:Key="DockItemTemplate" x:DataType="core:DockItem">
+                <controls:DockItemControl
+                    DataContext="{Binding}"
+                    IconSource="{Binding IconPath, Converter={StaticResource DockItemToIconConverter}}"
+                    IconSize="28"
+                    IsRunning="{Binding IsRunning, Mode=OneWay}"
+                    RunningIndicatorSize="8"
+                    RunningIndicatorColor="{ThemeResource MacShellDockRunningIndicatorBrush}"
+                    CornerRadius="8"
+                    ToolTipTemplate="{StaticResource DockItemToolTipTemplate}"
+                    Width="48"
+                    Height="48" />
+            </DataTemplate>
 
-        <!-- Dock Item Tooltip Template -->
-        <DataTemplate x:Key="DockItemToolTipTemplate" x:DataType="core:DockItem">
-            <TextBlock
-                Style="{StaticResource MacShellTextStyleCaption}"
-                Text="{Binding Name}"
-                Padding="8,4" />
-        </DataTemplate>
+            <!-- Dock Item Tooltip Template -->
+            <DataTemplate x:Key="DockItemToolTipTemplate" x:DataType="core:DockItem">
+                <TextBlock
+                    Style="{StaticResource MacShellTextStyleCaption}"
+                    Text="{Binding Name}"
+                    Padding="8,4" />
+            </DataTemplate>
 
-        <!-- Search Result Template -->
-        <DataTemplate x:Key="SearchResultTemplate" x:DataType="core:AppInfo">
-            <controls:SearchResultItem
-                Name="{Binding Name}"
-                Detail="{Binding ExecutablePath}"
-                IconSource="{Binding IconPath}"
-                IconSize="24"
-                Height="56"
-                Padding="16,0"
-                CornerRadius="8"
-                HoverBackground="{ThemeResource MacShellLauncherResultHoverBrush}"
-                SelectedBackground="{ThemeResource MacShellLauncherResultSelectedBrush}" />
-        </DataTemplate>
-    </Window.Resources>
-
-    <Grid x:Name="RootGrid" Background="Transparent">
+            <!-- Search Result Template -->
+            <DataTemplate x:Key="SearchResultTemplate" x:DataType="core:AppInfo">
+                <controls:SearchResultItem
+                    Name="{Binding Name}"
+                    Detail="{Binding ExecutablePath}"
+                    IconSource="{Binding IconPath}"
+                    IconSize="24"
+                    Height="56"
+                    Padding="16,0"
+                    CornerRadius="8"
+                    HoverBackground="{ThemeResource MacShellLauncherResultHoverBrush}"
+                    SelectedBackground="{ThemeResource MacShellLauncherResultSelectedBrush}" />
+            </DataTemplate>
+        </Grid.Resources>
         <!-- Main content area (click-through for desktop interaction) -->
         <Grid x:Name="ContentArea" IsHitTestVisible="False">
             <!-- Top Bar -->

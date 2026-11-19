@@ -1,10 +1,6 @@
 using System;
-using System.IO;
-using System.Reflection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Markup;
-using Microsoft.UI.Xaml.Navigation;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace MacShell.UI.Views;
@@ -43,123 +39,357 @@ public sealed class DockSettingsView : Page
 {
     public DockSettingsViewModel ViewModel { get; } = new();
 
-    private RadioButton? _posBottom;
-    private RadioButton? _posLeft;
-    private RadioButton? _posRight;
-    private Slider? _iconSizeSlider;
     private TextBlock? _iconSizeText;
-    private ToggleSwitch? _magnificationToggle;
-    private StackPanel? _magnificationPanel;
-    private Slider? _magnificationFactorSlider;
     private TextBlock? _magnificationFactorText;
-    private ToggleSwitch? _animationsToggle;
-    private ToggleSwitch? _runningIndicatorsToggle;
-    private ToggleSwitch? _autoHideToggle;
-    private StackPanel? _autoHidePanel;
-    private Slider? _autoHideDelaySlider;
     private TextBlock? _autoHideDelayText;
-    private Button? _managePinnedAppsButton;
+    private StackPanel? _magnificationPanel;
+    private StackPanel? _autoHidePanel;
 
     public DockSettingsView()
     {
-        LoadXaml();
-        SetupEventHandlers();
+        this.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Transparent);
+        CreateUIProgrammatically();
         DataContext = ViewModel;
     }
 
-    private void LoadXaml()
+    private void CreateUIProgrammatically()
     {
-        var assembly = Assembly.GetExecutingAssembly();
-        var assemblyDir = Path.GetDirectoryName(assembly.Location) ?? "";
-        var xamlPath = Path.Combine(assemblyDir, "Views", "DockSettingsView.xaml");
-
-        if (!File.Exists(xamlPath))
+        var scrollViewer = new ScrollViewer
         {
-            throw new FileNotFoundException($"DockSettingsView.xaml not found at {xamlPath}");
-        }
+            Padding = new Thickness(24),
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto
+        };
 
-        var xamlContent = File.ReadAllText(xamlPath);
-        var page = (Page)XamlReader.Load(xamlPath);
-
-        // Copy properties
-        this.Background = page.Background;
-        this.Content = page.Content;
-
-        // Find named elements
-        _posBottom = FindName("PosBottom") as RadioButton;
-        _posLeft = FindName("PosLeft") as RadioButton;
-        _posRight = FindName("PosRight") as RadioButton;
-        _iconSizeSlider = FindName("IconSizeSlider") as Slider;
-        _iconSizeText = FindName("IconSizeText") as TextBlock;
-        _magnificationToggle = FindName("MagnificationToggle") as ToggleSwitch;
-        _magnificationPanel = FindName("MagnificationPanel") as StackPanel;
-        _magnificationFactorSlider = FindName("MagnificationFactorSlider") as Slider;
-        _magnificationFactorText = FindName("MagnificationFactorText") as TextBlock;
-        _animationsToggle = FindName("AnimationsToggle") as ToggleSwitch;
-        _runningIndicatorsToggle = FindName("RunningIndicatorsToggle") as ToggleSwitch;
-        _autoHideToggle = FindName("AutoHideToggle") as ToggleSwitch;
-        _autoHidePanel = FindName("AutoHidePanel") as StackPanel;
-        _autoHideDelaySlider = FindName("AutoHideDelaySlider") as Slider;
-        _autoHideDelayText = FindName("AutoHideDelayText") as TextBlock;
-        _managePinnedAppsButton = FindName("ManagePinnedAppsButton") as Button;
-    }
-
-    private void SetupEventHandlers()
-    {
-        if (_iconSizeSlider != null)
+        var mainStack = new StackPanel
         {
-            _iconSizeSlider.ValueChanged += (s, e) =>
+            Spacing = 24,
+            MaxWidth = 560
+        };
+
+        // Header
+        var headerStack = new StackPanel { Spacing = 8 };
+        headerStack.Children.Add(new TextBlock
+        {
+            Text = "Dock",
+            Style = (Style)Application.Current.Resources["MacShellTextStyleDisplay"]
+        });
+        headerStack.Children.Add(new TextBlock
+        {
+            Text = "Customize dock appearance and behavior",
+            Style = (Style)Application.Current.Resources["MacShellTextStyleBodySecondary"]
+        });
+        mainStack.Children.Add(headerStack);
+
+        // Position
+        var positionCard = new Border
+        {
+            Style = (Style)Application.Current.Resources["MacShellCardStyle"]
+        };
+        var positionStack = new StackPanel { Spacing = 16 };
+        positionStack.Children.Add(new TextBlock
+        {
+            Text = "Position",
+            Style = (Style)Application.Current.Resources["MacShellTextStyleTitle"]
+        });
+        var positionRadioStack = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 12 };
+        var posBottom = new RadioButton
+        {
+            Content = "Bottom",
+            GroupName = "DockPosition",
+            IsChecked = true,
+            Tag = "Bottom",
+            Style = (Style)Application.Current.Resources["MacShellRadioButtonStyle"]
+        };
+        var posLeft = new RadioButton
+        {
+            Content = "Left",
+            GroupName = "DockPosition",
+            Tag = "Left",
+            Style = (Style)Application.Current.Resources["MacShellRadioButtonStyle"]
+        };
+        var posRight = new RadioButton
+        {
+            Content = "Right",
+            GroupName = "DockPosition",
+            Tag = "Right",
+            Style = (Style)Application.Current.Resources["MacShellRadioButtonStyle"]
+        };
+        positionRadioStack.Children.Add(posBottom);
+        positionRadioStack.Children.Add(posLeft);
+        positionRadioStack.Children.Add(posRight);
+        positionStack.Children.Add(positionRadioStack);
+        positionCard.Child = positionStack;
+        mainStack.Children.Add(positionCard);
+
+        // Size
+        var sizeCard = new Border
+        {
+            Style = (Style)Application.Current.Resources["MacShellCardStyle"]
+        };
+        var sizeStack = new StackPanel { Spacing = 16 };
+        sizeStack.Children.Add(CreateHeaderWithControl("Icon Size",
+            new TextBlock
+            {
+                Name = "IconSizeText",
+                Text = "48",
+                Style = (Style)Application.Current.Resources["MacShellTextStyleBodySecondary"]
+            },
+            CreateSlider(32, 64, 4, 48, 200, (value) =>
             {
                 if (_iconSizeText != null)
-                    _iconSizeText.Text = $"{(int)_iconSizeSlider.Value}";
-            };
-        }
+                    _iconSizeText.Text = $"{(int)value}";
+                ViewModel.IconSize = (int)value;
+            })));
+        sizeCard.Child = sizeStack;
+        mainStack.Children.Add(sizeCard);
 
-        if (_magnificationToggle != null && _magnificationPanel != null)
+        // Magnification
+        var magCard = new Border
         {
-            _magnificationToggle.Toggled += (s, e) =>
+            Style = (Style)Application.Current.Resources["MacShellCardStyle"]
+        };
+        var magStack = new StackPanel { Spacing = 16 };
+        magStack.Children.Add(CreateHeaderWithToggle("Magnification", "Enlarge icons on hover",
+            ViewModel, nameof(ViewModel.EnableMagnification), (isOn) =>
             {
-                _magnificationPanel.Visibility = _magnificationToggle.IsOn ? Visibility.Visible : Visibility.Collapsed;
-            };
-        }
+                if (_magnificationPanel != null)
+                    _magnificationPanel.Visibility = isOn ? Visibility.Visible : Visibility.Collapsed;
+            }));
 
-        if (_magnificationFactorSlider != null && _magnificationFactorText != null)
+        _magnificationPanel = new StackPanel
         {
-            _magnificationFactorSlider.ValueChanged += (s, e) =>
+            Orientation = Orientation.Horizontal,
+            Spacing = 12,
+            Visibility = Visibility.Collapsed
+        };
+        _magnificationPanel.Children.Add(new TextBlock
+        {
+            Text = "Magnification Factor",
+            Style = (Style)Application.Current.Resources["MacShellTextStyleBody"]
+        });
+        _magnificationFactorText = new TextBlock
+        {
+            Text = "1.4",
+            Style = (Style)Application.Current.Resources["MacShellTextStyleBodySecondary"]
+        };
+        _magnificationPanel.Children.Add(_magnificationFactorText);
+
+        var magFactorSlider = CreateSlider(1.1, 2.0, 0.1, 1.4, 200, (value) =>
+        {
+            if (_magnificationFactorText != null)
+                _magnificationFactorText.Text = $"{value:F1}";
+            ViewModel.MagnificationFactor = value;
+        });
+        _magnificationPanel.Children.Add(magFactorSlider);
+        magStack.Children.Add(_magnificationPanel);
+
+        magCard.Child = magStack;
+        mainStack.Children.Add(magCard);
+
+        // Animation
+        var animCard = new Border
+        {
+            Style = (Style)Application.Current.Resources["MacShellCardStyle"]
+        };
+        var animStack = new StackPanel { Spacing = 16 };
+        animStack.Children.Add(CreateToggleRow("Animations", "Smooth transitions and effects",
+            ViewModel, nameof(ViewModel.EnableAnimations)));
+        animCard.Child = animStack;
+        mainStack.Children.Add(animCard);
+
+        // Running Indicators
+        var runningCard = new Border
+        {
+            Style = (Style)Application.Current.Resources["MacShellCardStyle"]
+        };
+        var runningStack = new StackPanel { Spacing = 16 };
+        runningStack.Children.Add(CreateToggleRow("Running Indicators", "Show dots under running applications",
+            ViewModel, nameof(ViewModel.ShowRunningIndicators)));
+        runningCard.Child = runningStack;
+        mainStack.Children.Add(runningCard);
+
+        // Auto-hide
+        var autoHideCard = new Border
+        {
+            Style = (Style)Application.Current.Resources["MacShellCardStyle"]
+        };
+        var autoHideStack = new StackPanel { Spacing = 16 };
+        autoHideStack.Children.Add(CreateHeaderWithToggle("Auto-hide Dock", "Automatically hide dock when not in use",
+            ViewModel, nameof(ViewModel.AutoHide), (isOn) =>
             {
-                _magnificationFactorText.Text = $"{_magnificationFactorSlider.Value:F1}";
-            };
-        }
+                if (_autoHidePanel != null)
+                    _autoHidePanel.Visibility = isOn ? Visibility.Visible : Visibility.Collapsed;
+            }));
 
-        if (_autoHideToggle != null && _autoHidePanel != null)
+        _autoHidePanel = new StackPanel
         {
-            _autoHideToggle.Toggled += (s, e) =>
-            {
-                _autoHidePanel.Visibility = _autoHideToggle.IsOn ? Visibility.Visible : Visibility.Collapsed;
-            };
-        }
+            Orientation = Orientation.Horizontal,
+            Spacing = 12,
+            Visibility = Visibility.Collapsed
+        };
+        _autoHidePanel.Children.Add(new TextBlock
+        {
+            Text = "Show Delay",
+            Style = (Style)Application.Current.Resources["MacShellTextStyleBody"]
+        });
+        _autoHideDelayText = new TextBlock
+        {
+            Text = "200 ms",
+            Style = (Style)Application.Current.Resources["MacShellTextStyleBodySecondary"]
+        };
+        _autoHidePanel.Children.Add(_autoHideDelayText);
 
-        if (_autoHideDelaySlider != null && _autoHideDelayText != null)
+        var autoHideDelaySlider = CreateSlider(0, 1000, 50, 200, 200, (value) =>
         {
-            _autoHideDelaySlider.ValueChanged += (s, e) =>
-            {
-                _autoHideDelayText.Text = $"{(int)_autoHideDelaySlider.Value} ms";
-            };
-        }
+            if (_autoHideDelayText != null)
+                _autoHideDelayText.Text = $"{(int)value} ms";
+            ViewModel.AutoHideDelay = (int)value;
+        });
+        _autoHidePanel.Children.Add(autoHideDelaySlider);
+        autoHideStack.Children.Add(_autoHidePanel);
 
-        if (_managePinnedAppsButton != null)
+        autoHideCard.Child = autoHideStack;
+        mainStack.Children.Add(autoHideCard);
+
+        // Pinned Apps Management
+        var pinnedCard = new Border
         {
-            _managePinnedAppsButton.Click += OnManagePinnedApps;
-        }
+            Style = (Style)Application.Current.Resources["MacShellCardStyle"]
+        };
+        var pinnedStack = new StackPanel { Spacing = 16 };
+        pinnedStack.Children.Add(new TextBlock
+        {
+            Text = "Pinned Applications",
+            Style = (Style)Application.Current.Resources["MacShellTextStyleTitle"]
+        });
+        var manageButton = new Button
+        {
+            Style = (Style)Application.Current.Resources["MacShellAccentButtonStyle"],
+            Content = "Manage Pinned Apps"
+        };
+        manageButton.Click += OnManagePinnedApps;
+        pinnedStack.Children.Add(manageButton);
+        pinnedCard.Child = pinnedStack;
+        mainStack.Children.Add(pinnedCard);
+
+        scrollViewer.Content = mainStack;
+        this.Content = scrollViewer;
     }
 
-    protected override void OnNavigatedTo(NavigationEventArgs e)
+    private StackPanel CreateHeaderWithControl(string title, FrameworkElement textElement, Slider slider)
     {
-        base.OnNavigatedTo(e);
-        if (e.Parameter is SettingsContext context)
+        var stack = new StackPanel { Spacing = 12 };
+        var header = new Grid { ColumnDefinitions = { new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, new ColumnDefinition { Width = GridLength.Auto } } };
+        var leftStack = new StackPanel { Spacing = 4 };
+        leftStack.Children.Add(new TextBlock
         {
-            // Load settings from context.DockManager
+            Text = title,
+            Style = (Style)Application.Current.Resources["MacShellTextStyleTitle"]
+        });
+        Grid.SetColumn(leftStack, 0);
+        header.Children.Add(leftStack);
+        Grid.SetColumn(slider, 1);
+        header.Children.Add(slider);
+        stack.Children.Add(header);
+
+        if (textElement != null)
+        {
+            var textRow = new Grid { ColumnDefinitions = { new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, new ColumnDefinition { Width = GridLength.Auto } } };
+            Grid.SetColumn(textElement, 0);
+            textRow.Children.Add(textElement);
+            stack.Children.Add(textRow);
         }
+        return stack;
+    }
+
+    private StackPanel CreateHeaderWithToggle(string title, string description, DockSettingsViewModel vm, string propertyName, Action<bool>? onToggled = null)
+    {
+        var stack = new StackPanel { Spacing = 12 };
+        var header = new Grid { ColumnDefinitions = { new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, new ColumnDefinition { Width = GridLength.Auto } } };
+        var leftStack = new StackPanel { Spacing = 4 };
+        leftStack.Children.Add(new TextBlock
+        {
+            Text = title,
+            Style = (Style)Application.Current.Resources["MacShellTextStyleTitle"]
+        });
+        leftStack.Children.Add(new TextBlock
+        {
+            Text = description,
+            Style = (Style)Application.Current.Resources["MacShellTextStyleBodySecondary"]
+        });
+        Grid.SetColumn(leftStack, 0);
+        header.Children.Add(leftStack);
+
+        var toggle = new ToggleSwitch
+        {
+            Style = (Style)Application.Current.Resources["MacShellToggleSwitchStyle"],
+            OnContent = "",
+            OffContent = ""
+        };
+        toggle.SetBinding(ToggleSwitch.IsOnProperty, new Microsoft.UI.Xaml.Data.Binding
+        {
+            Source = vm,
+            Path = new PropertyPath(propertyName),
+            Mode = Microsoft.UI.Xaml.Data.BindingMode.TwoWay
+        });
+        if (onToggled != null)
+            toggle.Toggled += (s, e) => onToggled(((ToggleSwitch)s).IsOn);
+        Grid.SetColumn(toggle, 1);
+        header.Children.Add(toggle);
+        stack.Children.Add(header);
+        return stack;
+    }
+
+    private StackPanel CreateToggleRow(string title, string description, DockSettingsViewModel vm, string propertyName)
+    {
+        var row = new Grid { ColumnDefinitions = { new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, new ColumnDefinition { Width = GridLength.Auto } } };
+        var leftStack = new StackPanel { Spacing = 4 };
+        leftStack.Children.Add(new TextBlock
+        {
+            Text = title,
+            Style = (Style)Application.Current.Resources["MacShellTextStyleTitle"]
+        });
+        leftStack.Children.Add(new TextBlock
+        {
+            Text = description,
+            Style = (Style)Application.Current.Resources["MacShellTextStyleBodySecondary"]
+        });
+        Grid.SetColumn(leftStack, 0);
+        row.Children.Add(leftStack);
+
+        var toggle = new ToggleSwitch
+        {
+            Style = (Style)Application.Current.Resources["MacShellToggleSwitchStyle"],
+            OnContent = "",
+            OffContent = ""
+        };
+        toggle.SetBinding(ToggleSwitch.IsOnProperty, new Microsoft.UI.Xaml.Data.Binding
+        {
+            Source = vm,
+            Path = new PropertyPath(propertyName),
+            Mode = Microsoft.UI.Xaml.Data.BindingMode.TwoWay
+        });
+        Grid.SetColumn(toggle, 1);
+        row.Children.Add(toggle);
+
+        var wrapper = new StackPanel();
+        wrapper.Children.Add(row);
+        return wrapper;
+    }
+
+    private Slider CreateSlider(double minimum, double maximum, double stepFrequency, double value, double width, Action<double> onValueChanged)
+    {
+        var slider = new Slider
+        {
+            Style = (Style)Application.Current.Resources["MacShellSliderStyle"],
+            Minimum = minimum,
+            Maximum = maximum,
+            StepFrequency = stepFrequency,
+            Value = value,
+            Width = width
+        };
+        slider.ValueChanged += (s, e) => onValueChanged(e.NewValue);
+        return slider;
     }
 
     private void OnManagePinnedApps(object sender, RoutedEventArgs e)

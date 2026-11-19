@@ -37,8 +37,27 @@
   </ItemGroup>
 
   <ItemGroup>
+    <AssemblyAttribute Include="System.Windows.Markup.XmlnsDefinition">
+      <_Parameter1>using:MacShell.UI.Controls</_Parameter1>
+      <_Parameter2>MacShell.UI.Controls</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Windows.Markup.XmlnsDefinition">
+      <_Parameter1>using:MacShell.UI.Converters</_Parameter1>
+      <_Parameter2>MacShell.UI.Converters</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Windows.Markup.XmlnsPrefix">
+      <_Parameter1>using:MacShell.UI.Controls</_Parameter1>
+      <_Parameter2>controls</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Windows.Markup.XmlnsPrefix">
+      <_Parameter1>using:MacShell.UI.Converters</_Parameter1>
+      <_Parameter2>converters</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- Only include XAML files from source directories, not from output directories -->
-    <Content Include="Views\*.xaml;Resources\**\*.xaml" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Resources\**\*.xaml" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <!-- Override XAML compiler settings after targets import to disable XAML compilation -->
