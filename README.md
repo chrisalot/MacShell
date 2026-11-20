@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🖥️ MacShell
+# 🖥️ MacShell (VERY WORK IN PROGRESS. MIGHT NOW WORK-INSTALL AT YOUR OWN RISK.)
 
 **A Mac-inspired desktop shell for Windows — native, premium, performant.**
 
